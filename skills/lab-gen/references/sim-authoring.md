@@ -58,6 +58,7 @@ values() {
     speed: "1.29",                                   // string/number → just the value
     timer: { value: "1.29", live: true },            // live: value turns green (measuring now)
     dist:  { value: "0.80", label: "Gate spacing d", unit: "m" },  // relabel/re-unit per method
+                                                     // (unit: "" cleanly removes the unit)
     actual:{ value: "—", hidden: true },             // hide/show whole card
     _note: "Two gates give the average speed…"       // RESERVED: replaces the footer note
   };

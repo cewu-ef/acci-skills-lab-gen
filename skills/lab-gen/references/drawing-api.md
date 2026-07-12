@@ -83,12 +83,18 @@ EQ.trolley(g, { x, card?, color?, length? })
 EQ.lightGate(g, { x, blocked, layer })   // layer "back" BEFORE the trolley, "front" AFTER
 EQ.timerBox(g, { text, active, x?, z? }) // digital timer; active = glowing (measuring now).
                                          // Default position x=0.02, z=0.50 (bench back-left);
-                                         // pass x/z to place it elsewhere
+                                         // pass x/z to place it elsewhere. Callout target for
+                                         // the device at default position: ≈ g.P(0.28, 0.64, 0.27)
 EQ.cable(g, { from: [x, z], to: [x, z] })  // sagging cable between bench points
-EQ.ticker(g, { x? })                     // ticker-timer device (default x = 2.86)
+EQ.ticker(g, { x? })                     // ticker-timer device (default x = 2.86), centred on
+                                         // z=0; the tape passes over it at z=0.04. Attach a
+                                         // cable at roughly [x - 0.06, 0.14]
 EQ.powerSupply(g, { on })                // PSU with LED; FIXED at x 0.06–0.52, z 0.52–0.78
-EQ.tape(g, { from, to?, marks, dotR? })  // paper tape; marks = [{x, major?}] — YOU compute
-                                         // dot positions from your physics; major → red tick
+EQ.tape(g, { from, to?, marks, dotR? })  // paper tape; from/to are world-x SCALARS (the tape
+                                         // runs at z=0.04, just beside the track centreline);
+                                         // to defaults to 3.04 (through the default ticker).
+                                         // marks = [{x, major?}] — YOU compute dot positions
+                                         // from your physics; major → red tick
 EQ.laptop(g)                             // data-logging laptop with live screen trace;
                                          // FIXED at bench back-left (x 0.05–0.52, z 0.48–0.84)
 EQ.motionSensor(g, { x? })               // ultrasonic sensor (default x = 0.03)

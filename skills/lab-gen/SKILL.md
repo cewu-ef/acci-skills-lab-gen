@@ -46,6 +46,11 @@ The output filename stays the same; the file is replaced.
 
 ## Rules
 
+- Stay strictly faithful to the source material: offer only the methods, options,
+  and adjustable parameters it actually shows — never invent extra variants, however
+  pedagogically tempting. Users extend a lab by uploading more material later
+  (e.g. a follow-up page adding methods to the same dropdown), so a single-option
+  select is fine as a starting point.
 - No network anywhere: no fetch/XHR/imports/CDN/webfonts in sim.js or the theme.
   The assembler rejects violations.
 - All sim state must derive from the params passed to `reset(P)` — this is what
