@@ -1,0 +1,9 @@
+.idea/
+__pycache__/
+*.pyc
+.venv/
+venv/
+dev/workspace/
+dev/out/
+.pytest_cache/
+.DS_Store

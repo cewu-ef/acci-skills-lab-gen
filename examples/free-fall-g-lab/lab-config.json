@@ -1,0 +1,51 @@
+{
+  "id": "free-fall-g-lab",
+  "title": "Measuring g by Free Fall",
+  "subtitle": "BOX 2.2 · Interactive lab",
+  "layout": "standard",
+  "canvas": { "w": 1000, "h": 470 },
+  "controls": [
+    {
+      "id": "mode",
+      "label": "Experiment",
+      "width": 260,
+      "options": [
+        { "value": "single", "label": "Single timed drop" },
+        { "value": "series", "label": "Five heights → h–t² graph" }
+      ]
+    },
+    {
+      "id": "magnet",
+      "label": "Electromagnet",
+      "width": 240,
+      "value": "real",
+      "options": [
+        { "value": "ideal", "label": "Ideal release (no lag)" },
+        { "value": "real", "label": "Real magnet (≈5 ms lag)" },
+        { "value": "custom", "label": "Custom release lag" }
+      ]
+    }
+  ],
+  "params": [
+    {
+      "id": "h", "label": "Drop height h",
+      "min": 0.4, "max": 2.0, "step": 0.05, "value": 1.2,
+      "unit": "m", "decimals": 2,
+      "showIf": { "control": "mode", "in": ["single"] }
+    },
+    {
+      "id": "lagMs", "label": "Release lag",
+      "min": 0, "max": 20, "step": 1, "value": 8,
+      "unit": "ms", "decimals": 0,
+      "showIf": { "control": "magnet", "in": ["custom"] }
+    }
+  ],
+  "stats": [
+    { "id": "timer", "label": "Timer t", "unit": "s" },
+    { "id": "drop", "label": "Drop height h", "unit": "m" },
+    { "id": "gmeas", "label": "Measured g = 2h/t²", "unit": "m/s²", "variant": "accent" },
+    { "id": "gtrue", "label": "True g", "unit": "m/s²", "variant": "info" },
+    { "id": "drops", "label": "Drops plotted" }
+  ],
+  "note": "Switching off the electromagnet starts the ms timer and releases the ball; breaking the trapdoor circuit stops it. Shown in slow motion (×0.35) — the timer reads true physics time."
+}

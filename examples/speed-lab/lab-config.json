@@ -1,0 +1,48 @@
+{
+  "id": "speed-lab",
+  "title": "Measuring the Speed of a Trolley",
+  "subtitle": "BOX 1.1 · Interactive lab · four methods",
+  "layout": "standard",
+  "equipment": "kinematics",
+  "canvas": { "w": 1000, "h": 470 },
+  "controls": [
+    {
+      "id": "method",
+      "label": "Method",
+      "width": 220,
+      "options": [
+        { "value": "two", "label": "Two light gates" },
+        { "value": "one", "label": "One light gate" },
+        { "value": "ticker", "label": "Ticker-timer" },
+        { "value": "sensor", "label": "Motion sensor" }
+      ]
+    },
+    {
+      "id": "motion",
+      "label": "Motion",
+      "width": 180,
+      "options": [
+        { "value": "const", "label": "Constant speed" },
+        { "value": "accel", "label": "Accelerating" }
+      ]
+    }
+  ],
+  "params": [
+    { "id": "v0", "label": "Starting speed", "min": 0.2, "max": 1.4, "step": 0.05, "value": 0.6, "unit": "m/s", "decimals": 2 },
+    { "id": "a", "label": "Acceleration", "min": 0.1, "max": 1.0, "step": 0.05, "value": 0.4, "unit": "m/s²", "decimals": 2,
+      "showIf": { "control": "motion", "in": ["accel"] } },
+    { "id": "gapD", "label": "Gate spacing d", "min": 0.4, "max": 1.2, "step": 0.05, "value": 0.8, "unit": "m", "decimals": 2,
+      "showIf": { "control": "method", "in": ["two"] } },
+    { "id": "cardL", "label": "Card length", "min": 0.06, "max": 0.2, "step": 0.01, "value": 0.1, "unit": "m", "decimals": 2,
+      "showIf": { "control": "method", "in": ["two", "one"] } },
+    { "id": "tickerInt", "label": "Tick interval", "min": 0.05, "max": 0.2, "step": 0.01, "value": 0.1, "unit": "s", "decimals": 2,
+      "showIf": { "control": "method", "in": ["ticker"] } }
+  ],
+  "stats": [
+    { "id": "timer", "label": "Timer", "unit": "s" },
+    { "id": "dist", "label": "Gate spacing d", "unit": "m" },
+    { "id": "speed", "label": "Speed", "unit": "m/s", "variant": "accent" },
+    { "id": "actual", "label": "True speed", "unit": "m/s", "variant": "info" }
+  ],
+  "note": "Two gates give the average speed over the distance d between them."
+}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__LAB_TITLE__</title>
+<style>
+/*__LABKIT_CSS__*/
+</style>
+</head>
+<body>
+<div id="lab-root"></div>
+<script type="application/json" id="lk-source">
+/*__MANIFEST_JSON__*/
+</script>
+<script>
+"use strict";
+const THEME = /*__THEME_JSON__*/ null;
+const CONFIG = /*__CONFIG_JSON__*/ null;
+/*__LABKIT_JS__*/
+/*__EQUIPMENT_JS__*/
+/*__LK_SIM_BEGIN__*/
+/*__SIM_JS__*/
+/*__LK_SIM_END__*/
+LabKit.start(CONFIG, THEME, Sim, document.getElementById("lab-root"));
+</script>
+</body>
+</html>

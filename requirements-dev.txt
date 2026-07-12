@@ -1,0 +1,4 @@
+# Dev/test only — skills/lab-gen/scripts/*.py must stay Python-stdlib-only
+# (they run inside the ACCI runtime's run_skill_script sandbox).
+pytest>=8
+playwright>=1.45

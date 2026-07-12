@@ -1,0 +1,27 @@
+{
+  "meta": { "preset": "warm-paper-physics", "source": "design-project export accel-src.html" },
+  "palette": {
+    "pageBg": "#F9E3D0",
+    "surface": "#FFFDF9",
+    "surfaceAlt": "#FFF7EE",
+    "line": "#EAD0BA",
+    "ink": "#3A2A22",
+    "inkMuted": "#A06A3F",
+    "accent": "#EE6A3C",
+    "accentContrast": "#FFFFFF",
+    "good": "#1E9E5A",
+    "warn": "#B45309",
+    "danger": "#B91C1C",
+    "info": "#0E7C86",
+    "canvasSky": "#FDF3E7",
+    "canvasGround": "#E9CFAE",
+    "inkOnCanvas": "#3A2A22"
+  },
+  "font": {
+    "body": "-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+    "heading": "inherit",
+    "mono": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+    "baseSizePx": 15
+  },
+  "shape": { "radiusPx": 12, "borderPx": 1.5, "shadow": "soft" }
+}

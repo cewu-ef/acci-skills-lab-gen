@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Measuring g by Free Fall</title>
+<style>
+* { box-sizing: border-box; }
+body {
+margin: 0;
+background: var(--lk-page-bg);
+font-family: var(--lk-font-body);
+font-size: var(--lk-base-size);
+color: var(--lk-ink);
+}
+.lk-page {
+max-width: 1020px;
+margin: 0 auto;
+padding: 28px 20px 48px;
+display: flex;
+flex-direction: column;
+gap: 14px;
+}
+.lk-header { text-align: center; }
+.lk-header h1 {
+margin: 0;
+font-family: var(--lk-font-heading);
+font-size: 1.65em;
+font-weight: 800;
+color: var(--lk-ink);
+}
+.lk-subtitle {
+margin: 5px 0 0;
+font-size: 0.93em;
+color: var(--lk-ink-muted);
+}
+.lk-card {
+background: var(--lk-surface);
+border: var(--lk-border-w) solid var(--lk-line);
+border-radius: var(--lk-radius);
+box-shadow: var(--lk-shadow);
+}
+.lk-controlbar {
+position: relative;
+padding: 14px 16px;
+display: flex;
+flex-wrap: wrap;
+gap: 16px 22px;
+align-items: end;
+justify-content: space-between;
+z-index: 10;
+}
+.lk-controls { display: flex; flex-wrap: wrap; gap: 16px 22px; }
+.lk-field { display: flex; flex-direction: column; gap: 6px; }
+.lk-label {
+font-size: 0.73em;
+font-weight: 800;
+letter-spacing: 0.8px;
+text-transform: uppercase;
+color: var(--lk-ink-muted);
+}
+.lk-select {
+padding: 9px 10px;
+border-radius: calc(var(--lk-radius) - 2px);
+border: var(--lk-border-w) solid var(--lk-line-strong);
+background: var(--lk-surface-alt);
+color: var(--lk-ink);
+font-family: var(--lk-font-body);
+font-size: 0.93em;
+font-weight: 700;
+cursor: pointer;
+outline: none;
+}
+.lk-select:focus-visible { border-color: var(--lk-accent); }
+.lk-buttons { display: flex; gap: 8px; }
+.lk-btn {
+padding: 10px 16px;
+border-radius: calc(var(--lk-radius) - 1px);
+border: var(--lk-border-w) solid var(--lk-line-strong);
+background: var(--lk-surface-alt);
+color: var(--lk-ink);
+font-family: var(--lk-font-body);
+font-size: 0.93em;
+font-weight: 700;
+cursor: pointer;
+}
+.lk-btn:focus-visible, .lk-btn-primary:focus-visible { outline: 2px solid var(--lk-accent); outline-offset: 1px; }
+.lk-btn[aria-expanded="true"] { background: var(--lk-surface-raise); border-color: var(--lk-accent); }
+.lk-btn-primary {
+padding: 10px 26px;
+border: none;
+background: var(--lk-accent);
+color: var(--lk-accent-contrast);
+font-weight: 800;
+box-shadow: 0 2px 0 var(--lk-accent-strong);
+}
+.lk-btn-primary:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--lk-accent-strong); }
+.lk-popover {
+position: absolute;
+top: 100%;
+right: 0;
+margin-top: 10px;
+width: min(300px, 92vw);
+padding: 18px 20px;
+box-shadow: var(--lk-shadow-pop);
+z-index: 50;
+display: flex;
+flex-direction: column;
+gap: 15px;
+}
+.lk-popover[hidden] { display: none; }
+.lk-popover-title {
+font-size: 0.73em;
+font-weight: 800;
+letter-spacing: 0.8px;
+text-transform: uppercase;
+color: var(--lk-ink);
+}
+.lk-param { display: flex; flex-direction: column; gap: 5px; }
+.lk-param[hidden] { display: none; }
+.lk-param-label { font-size: 0.8em; font-weight: 700; color: var(--lk-ink-muted); }
+.lk-param-value { color: var(--lk-accent-ink); }
+.lk-param input[type="range"] { width: 100%; accent-color: var(--lk-accent); margin: 0; }
+.lk-stage { position: relative; overflow: hidden; background: var(--lk-canvas-sky); }
+.lk-stage canvas { display: block; width: 100%; height: auto; touch-action: none; }
+.lk-stats {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+gap: 10px;
+}
+.lk-stat { padding: 12px 14px; }
+.lk-stat[hidden] { display: none; }
+.lk-stat-label {
+font-size: 0.73em;
+font-weight: 800;
+letter-spacing: 0.8px;
+text-transform: uppercase;
+color: var(--lk-ink-muted);
+}
+.lk-stat-value {
+font-family: var(--lk-font-mono);
+font-size: 1.85em;
+color: var(--lk-ink);
+margin-top: 2px;
+}
+.lk-stat-unit { font-size: 0.5em; color: var(--lk-ink-muted); }
+.lk-stat[data-variant="accent"] { background: var(--lk-surface-raise); border-color: var(--lk-accent-soft); }
+.lk-stat[data-variant="accent"] .lk-stat-label,
+.lk-stat[data-variant="accent"] .lk-stat-value { color: var(--lk-accent-ink); }
+.lk-stat[data-variant="info"] { border-color: var(--lk-info-soft); }
+.lk-stat[data-variant="info"] .lk-stat-label,
+.lk-stat[data-variant="info"] .lk-stat-value { color: var(--lk-info); }
+.lk-stat[data-state="live"] .lk-stat-value { color: var(--lk-good); }
+.lk-note {
+margin: 0;
+text-align: center;
+font-size: 0.87em;
+font-weight: 600;
+color: var(--lk-ink-muted);
+}
+.lk-error {
+padding: 14px 16px;
+border: 2px solid var(--lk-danger);
+border-radius: var(--lk-radius);
+background: var(--lk-surface);
+color: var(--lk-danger);
+font-family: var(--lk-font-mono);
+font-size: 0.85em;
+white-space: pre-wrap;
+overflow-wrap: anywhere;
+}
+@media (max-width: 520px) {
+.lk-page { padding: 16px 10px 32px; gap: 10px; }
+.lk-controlbar { align-items: stretch; }
+.lk-controls, .lk-buttons { width: 100%; }
+.lk-buttons { justify-content: stretch; }
+.lk-buttons .lk-btn, .lk-buttons .lk-btn-primary { flex: 1; }
+.lk-select { width: 100%; }
+.lk-field { flex: 1 1 100%; }
+.lk-stats { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+}
+</style>
+</head>
+<body>
+<div id="lab-root"></div>
+<script type="application/json" id="lk-source">
+{"labkit":"0.1.0","theme":{"meta":{"preset":"warm-paper-physics","source":"design-project export accel-src.html"},"palette":{"pageBg":"#F9E3D0","surface":"#FFFDF9","surfaceAlt":"#FFF7EE","line":"#EAD0BA","ink":"#3A2A22","inkMuted":"#A06A3F","accent":"#EE6A3C","accentContrast":"#FFFFFF","good":"#1E9E5A","warn":"#B45309","danger":"#B91C1C","info":"#0E7C86","canvasSky":"#FDF3E7","canvasGround":"#E9CFAE","inkOnCanvas":"#3A2A22"},"font":{"body":"-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif","heading":"inherit","mono":"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace","baseSizePx":15},"shape":{"radiusPx":12,"borderPx":1.5,"shadow":"soft"}},"config":{"id":"free-fall-g-lab","title":"Measuring g by Free Fall","subtitle":"BOX 2.2 \u00b7 Interactive lab","layout":"standard","canvas":{"w":1000,"h":470},"controls":[{"id":"mode","label":"Experiment","width":260,"options":[{"value":"single","label":"Single timed drop"},{"value":"series","label":"Five heights \u2192 h\u2013t\u00b2 graph"}]},{"id":"magnet","label":"Electromagnet","width":240,"value":"real","options":[{"value":"ideal","label":"Ideal release (no lag)"},{"value":"real","label":"Real magnet (\u22485 ms lag)"},{"value":"custom","label":"Custom release lag"}]}],"params":[{"id":"h","label":"Drop height h","min":0.4,"max":2.0,"step":0.05,"value":1.2,"unit":"m","decimals":2,"showIf":{"control":"mode","in":["single"]}},{"id":"lagMs","label":"Release lag","min":0,"max":20,"step":1,"value":8,"unit":"ms","decimals":0,"showIf":{"control":"magnet","in":["custom"]}}],"stats":[{"id":"timer","label":"Timer t","unit":"s"},{"id":"drop","label":"Drop height h","unit":"m"},{"id":"gmeas","label":"Measured g = 2h/t\u00b2","unit":"m/s\u00b2","variant":"accent"},{"id":"gtrue","label":"True g","unit":"m/s\u00b2","variant":"info"},{"id":"drops","label":"Drops plotted"}],"note":"Switching off the electromagnet starts the ms timer and releases the ball; breaking the trapdoor circuit stops it. Shown in slow motion (\u00d70.35) \u2014 the timer reads true physics time."},"sim":"inline:lk-sim-markers"}
+</script>
+<script>
+"use strict";
+const THEME = {"meta":{"preset":"warm-paper-physics","source":"design-project export accel-src.html"},"palette":{"pageBg":"#F9E3D0","surface":"#FFFDF9","surfaceAlt":"#FFF7EE","line":"#EAD0BA","ink":"#3A2A22","inkMuted":"#A06A3F","accent":"#EE6A3C","accentContrast":"#FFFFFF","good":"#1E9E5A","warn":"#B45309","danger":"#B91C1C","info":"#0E7C86","canvasSky":"#FDF3E7","canvasGround":"#E9CFAE","inkOnCanvas":"#3A2A22"},"font":{"body":"-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif","heading":"inherit","mono":"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace","baseSizePx":15},"shape":{"radiusPx":12,"borderPx":1.5,"shadow":"soft"}};
+const CONFIG = {"id":"free-fall-g-lab","title":"Measuring g by Free Fall","subtitle":"BOX 2.2 \u00b7 Interactive lab","layout":"standard","canvas":{"w":1000,"h":470},"controls":[{"id":"mode","label":"Experiment","width":260,"options":[{"value":"single","label":"Single timed drop"},{"value":"series","label":"Five heights \u2192 h\u2013t\u00b2 graph"}]},{"id":"magnet","label":"Electromagnet","width":240,"value":"real","options":[{"value":"ideal","label":"Ideal release (no lag)"},{"value":"real","label":"Real magnet (\u22485 ms lag)"},{"value":"custom","label":"Custom release lag"}]}],"params":[{"id":"h","label":"Drop height h","min":0.4,"max":2.0,"step":0.05,"value":1.2,"unit":"m","decimals":2,"showIf":{"control":"mode","in":["single"]}},{"id":"lagMs","label":"Release lag","min":0,"max":20,"step":1,"value":8,"unit":"ms","decimals":0,"showIf":{"control":"magnet","in":["custom"]}}],"stats":[{"id":"timer","label":"Timer t","unit":"s"},{"id":"drop","label":"Drop height h","unit":"m"},{"id":"gmeas","label":"Measured g = 2h/t\u00b2","unit":"m/s\u00b2","variant":"accent"},{"id":"gtrue","label":"True g","unit":"m/s\u00b2","variant":"info"},{"id":"drops","label":"Drops plotted"}],"note":"Switching off the electromagnet starts the ms timer and releases the ball; breaking the trapdoor circuit stops it. Shown in slow motion (\u00d70.35) \u2014 the timer reads true physics time."};
+(() => {
+"use strict";
+const VERSION = "0.1.0";
+const THEME_DEFAULTS = {
+meta: {},
+palette: {
+pageBg: "#f6f4ef", surface: "#ffffff", surfaceAlt: "#f1ede4",
+ink: "#241f1a", inkMuted: "#8a7a66",
+accent: "#d4622a", accentContrast: "#ffffff",
+good: "#1e9e5a", warn: "#b45309", danger: "#b91c1c", info: "#0e7c86",
+canvasSky: "#fdf3e7", canvasGround: "#e9cfae", inkOnCanvas: "#3a2a22"
+},
+font: {
+body: "-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+heading: "inherit",
+mono: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+baseSizePx: 15
+},
+shape: { radiusPx: 11, borderPx: 1.5, shadow: "soft" }
+};
+const SHADOWS = {
+flat:  { card: "none", pop: "0 12px 28px rgba(0,0,0,0.18)" },
+soft:  { card: "0 3px 12px rgba(0,0,0,0.07)", pop: "0 18px 36px rgba(0,0,0,0.22)" },
+crisp: { card: "2px 2px 0 rgba(0,0,0,0.14)", pop: "4px 4px 0 rgba(0,0,0,0.2)" }
+};
+function deepMerge(base, over) {
+const out = {};
+for (const k of Object.keys(base)) {
+const b = base[k], o = over ? over[k] : undefined;
+out[k] = (b && typeof b === "object" && !Array.isArray(b))
+? deepMerge(b, o || {})
+: (o !== undefined ? o : b);
+}
+if (over) for (const k of Object.keys(over)) if (!(k in out)) out[k] = over[k];
+return out;
+}
+function shadeColor(color, f) {
+let r, g, b, a = null;
+if (color[0] === "#") {
+let h = color.slice(1);
+if (h.length === 3) h = h.replace(/./g, (c) => c + c);
+const n = parseInt(h.slice(0, 6), 16);
+r = (n >> 16) & 255; g = (n >> 8) & 255; b = n & 255;
+} else {
+const m = /rgba?\(([^)]+)\)/.exec(color);
+if (!m) return color;
+const parts = m[1].split(",").map(Number);
+[r, g, b] = parts; a = parts[3] ?? null;
+}
+r = Math.min(255, Math.round(r * f));
+g = Math.min(255, Math.round(g * f));
+b = Math.min(255, Math.round(b * f));
+return a === null ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${a})`;
+}
+function tintColor(color, t) {
+let h = color[0] === "#" ? color.slice(1) : null;
+if (h && h.length === 3) h = h.replace(/./g, (c) => c + c);
+if (!h) return color;
+const n = parseInt(h.slice(0, 6), 16);
+const mix = (c) => Math.round(c + (255 - c) * t);
+return `rgb(${mix((n >> 16) & 255)},${mix((n >> 8) & 255)},${mix(n & 255)})`;
+}
+function applyTheme(theme, root) {
+const th = deepMerge(THEME_DEFAULTS, theme || {});
+const p = th.palette, f = th.font, s = th.shape;
+const sh = SHADOWS[s.shadow] || SHADOWS.soft;
+const line = p.line || shadeColor(p.surfaceAlt, 0.9);
+const vars = {
+"--lk-page-bg": p.pageBg,
+"--lk-surface": p.surface,
+"--lk-surface-alt": p.surfaceAlt,
+"--lk-surface-raise": tintColor(p.accent, 0.88),
+"--lk-ink": p.ink,
+"--lk-ink-muted": p.inkMuted,
+"--lk-line": line,
+"--lk-line-strong": shadeColor(line, 0.88),
+"--lk-accent": p.accent,
+"--lk-accent-contrast": p.accentContrast,
+"--lk-accent-strong": shadeColor(p.accent, 0.72),
+"--lk-accent-soft": tintColor(p.accent, 0.55),
+"--lk-accent-ink": shadeColor(p.accent, 0.85),
+"--lk-good": p.good,
+"--lk-warn": p.warn,
+"--lk-danger": p.danger,
+"--lk-info": p.info,
+"--lk-info-soft": tintColor(p.info, 0.6),
+"--lk-canvas-sky": p.canvasSky,
+"--lk-canvas-ground": p.canvasGround,
+"--lk-font-body": f.body,
+"--lk-font-heading": f.heading === "inherit" ? f.body : f.heading,
+"--lk-font-mono": f.mono,
+"--lk-base-size": f.baseSizePx + "px",
+"--lk-radius": s.radiusPx + "px",
+"--lk-border-w": s.borderPx + "px",
+"--lk-shadow": sh.card,
+"--lk-shadow-pop": sh.pop
+};
+const el = root || document.documentElement;
+for (const [k, v] of Object.entries(vars)) el.style.setProperty(k, v);
+return th;
+}
+const STRINGS = {
+start: "Start", pause: "Pause", resume: "Resume", runAgain: "Run again",
+reset: "Reset", settings: "Settings", settingsTitle: "Experiment settings"
+};
+function normalizeConfig(config) {
+const c = Object.assign({ layout: "standard", controls: [], params: [], stats: [] }, config);
+c.canvas = Object.assign({ w: 1000, h: 470 }, config.canvas || {});
+c.strings = Object.assign({}, STRINGS, config.strings || {});
+return c;
+}
+function el(tag, cls, attrs) {
+const n = document.createElement(tag);
+if (cls) n.className = cls;
+if (attrs) for (const [k, v] of Object.entries(attrs)) {
+if (k === "text") n.textContent = v;
+else n.setAttribute(k, v);
+}
+return n;
+}
+function fmtParam(def, value) {
+const d = def.decimals !== undefined ? def.decimals : 2;
+return Number(value).toFixed(d) + (def.unit ? " " + def.unit : "");
+}
+function buildChrome(config, mount) {
+const c = normalizeConfig(config);
+const S = c.strings;
+const values = {};
+const changeCbs = [], runCbs = [], resetCbs = [];
+const page = el("div", "lk-page");
+const header = el("header", "lk-header");
+header.appendChild(el("h1", null, { text: c.title || "Interactive lab" }));
+if (c.subtitle) header.appendChild(el("p", "lk-subtitle", { text: c.subtitle }));
+page.appendChild(header);
+const bar = el("div", "lk-controlbar lk-card");
+const controlsBox = el("div", "lk-controls");
+const selectEls = {};
+for (const ctl of c.controls) {
+const field = el("div", "lk-field");
+const labId = "lk-lab-" + ctl.id;
+field.appendChild(el("span", "lk-label", { text: ctl.label || ctl.id, id: labId }));
+const sel = el("select", "lk-select", { "aria-labelledby": labId });
+if (ctl.width) sel.style.width = ctl.width + "px";
+for (const opt of ctl.options || []) {
+const o = el("option", null, { value: opt.value, text: opt.label });
+sel.appendChild(o);
+}
+sel.value = ctl.value !== undefined ? ctl.value : (ctl.options?.[0]?.value ?? "");
+values[ctl.id] = sel.value;
+sel.addEventListener("change", () => {
+values[ctl.id] = sel.value;
+refreshVisibility();
+emitChange(ctl.id, sel.value);
+});
+selectEls[ctl.id] = sel;
+field.appendChild(sel);
+controlsBox.appendChild(field);
+}
+bar.appendChild(controlsBox);
+const buttons = el("div", "lk-buttons");
+let settingsBtn = null, popover = null;
+const paramRows = {};
+if (c.params.length) {
+settingsBtn = el("button", "lk-btn", { type: "button", text: S.settings, "aria-expanded": "false", "aria-haspopup": "true" });
+buttons.appendChild(settingsBtn);
+popover = el("div", "lk-popover lk-card", { role: "group", "aria-label": S.settingsTitle, hidden: "" });
+popover.appendChild(el("div", "lk-popover-title", { text: S.settingsTitle }));
+for (const def of c.params) {
+const row = el("div", "lk-param", { "data-param": def.id });
+const label = el("span", "lk-param-label");
+label.appendChild(document.createTextNode((def.label || def.id) + " · "));
+const valSpan = el("span", "lk-param-value", { text: fmtParam(def, def.value) });
+label.appendChild(valSpan);
+row.appendChild(label);
+const input = el("input", null, {
+type: "range", min: def.min, max: def.max, step: def.step,
+value: def.value, "aria-label": def.label || def.id
+});
+values[def.id] = Number(def.value);
+input.addEventListener("input", () => {
+values[def.id] = Number(input.value);
+valSpan.textContent = fmtParam(def, input.value);
+emitChange(def.id, values[def.id]);
+});
+row.appendChild(input);
+paramRows[def.id] = { row, def, input, valSpan };
+popover.appendChild(row);
+}
+settingsBtn.addEventListener("click", () => toggleSettings());
+document.addEventListener("pointerdown", (e) => {
+if (popover.hidden) return;
+if (!popover.contains(e.target) && e.target !== settingsBtn) toggleSettings(false);
+});
+}
+const resetBtn = el("button", "lk-btn", { type: "button", text: S.reset });
+resetBtn.addEventListener("click", () => { toggleSettings(false); resetCbs.forEach((f) => f()); });
+buttons.appendChild(resetBtn);
+const runBtn = el("button", "lk-btn-primary", { type: "button", text: S.start, "data-lk": "run" });
+runBtn.addEventListener("click", () => { toggleSettings(false); runCbs.forEach((f) => f()); });
+buttons.appendChild(runBtn);
+bar.appendChild(buttons);
+if (popover) bar.appendChild(popover);
+page.appendChild(bar);
+const stage = el("div", "lk-stage lk-card");
+const canvas = el("canvas", null, {
+width: c.canvas.w, height: c.canvas.h,
+role: "img", "aria-label": (c.title || "lab") + " — simulation view"
+});
+stage.appendChild(canvas);
+page.appendChild(stage);
+const statsBox = el("div", "lk-stats");
+const statEls = {};
+for (const st of c.stats) {
+const card = el("div", "lk-stat lk-card", { "data-stat": st.id });
+if (st.variant) card.setAttribute("data-variant", st.variant);
+const label = el("div", "lk-stat-label", { text: st.label || st.id });
+const value = el("div", "lk-stat-value");
+const num = el("span", "lk-num", { text: "—" });
+const unit = el("span", "lk-stat-unit", { text: st.unit ? " " + st.unit : "" });
+value.appendChild(num); value.appendChild(unit);
+card.appendChild(label); card.appendChild(value);
+statEls[st.id] = { card, label, num, unit };
+statsBox.appendChild(card);
+}
+if (c.stats.length) page.appendChild(statsBox);
+const note = el("p", "lk-note");
+if (c.note) note.textContent = c.note;
+page.appendChild(note);
+(mount || document.body).appendChild(page);
+function toggleSettings(force) {
+if (!popover) return;
+const show = force !== undefined ? force : popover.hidden;
+popover.hidden = !show;
+if (settingsBtn) settingsBtn.setAttribute("aria-expanded", String(show));
+}
+function visible(def) {
+if (!def.showIf) return true;
+const cur = values[def.showIf.control];
+return (def.showIf.in || []).includes(cur);
+}
+function refreshVisibility() {
+for (const { row, def } of Object.values(paramRows)) row.hidden = !visible(def);
+}
+refreshVisibility();
+function emitChange(id, v) { changeCbs.forEach((f) => f(id, v)); }
+return {
+root: page,
+canvas,
+ctx: canvas.getContext("2d"),
+config: c,
+params: () => Object.assign({}, values),
+setStat(id, patch) {
+const s = statEls[id];
+if (!s) return;
+if (typeof patch === "string" || typeof patch === "number") patch = { value: patch };
+if (patch.value !== undefined) s.num.textContent = String(patch.value);
+if (patch.label !== undefined) s.label.textContent = patch.label;
+if (patch.unit !== undefined) s.unit.textContent = patch.unit ? " " + patch.unit : "";
+if (patch.hidden !== undefined) s.card.hidden = !!patch.hidden;
+if (patch.live !== undefined) {
+if (patch.live) s.card.setAttribute("data-state", "live");
+else s.card.removeAttribute("data-state");
+}
+},
+setNote(text) { note.textContent = text || ""; },
+setRunLabel(text) { runBtn.textContent = text; },
+setSelect(id, v) {
+const sel = selectEls[id];
+if (sel && sel.value !== v) { sel.value = v; values[id] = v; refreshVisibility(); }
+},
+closeSettings: () => toggleSettings(false),
+onChange: (f) => changeCbs.push(f),
+onRun: (f) => runCbs.push(f),
+onReset: (f) => resetCbs.push(f),
+showError(msg) {
+const box = el("div", "lk-error", { role: "alert", text: "Lab error:\n" + msg });
+page.insertBefore(box, page.firstChild);
+}
+};
+}
+function makeDrawKit(chrome, theme) {
+const ctx = chrome.ctx;
+const W = chrome.canvas.width, H = chrome.canvas.height;
+const p = theme.palette, f = theme.font;
+const view = { OX: 28, BY: Math.round(H * 0.75), S: 280, TX: 130, TZ: 70 };
+const g = {
+ctx, W, H,
+t: 0, dt: 0, state: "idle", params: {}, labelAlpha: 1,
+theme: {
+sky: p.canvasSky, ground: p.canvasGround, ink: p.inkOnCanvas,
+muted: p.inkMuted, accent: p.accent, good: p.good, warn: p.warn,
+danger: p.danger, info: p.info, surface: p.surface,
+fontBody: f.body, fontMono: f.mono
+},
+setView(v) { Object.assign(view, v); },
+P(x, z, y) { return [view.OX + x * view.S + z * view.TX, view.BY - y * view.S - z * view.TZ]; },
+shade: shadeColor,
+tint: tintColor,
+clear(top, bottom) {
+ctx.clearRect(0, 0, W, H);
+const bg = ctx.createLinearGradient(0, 0, 0, H);
+bg.addColorStop(0, top || p.canvasSky);
+bg.addColorStop(1, bottom || shadeColor(p.canvasSky, 0.94));
+ctx.fillStyle = bg;
+ctx.fillRect(0, 0, W, H);
+},
+poly(pts, fill, stroke, lw) {
+ctx.beginPath();
+ctx.moveTo(pts[0][0], pts[0][1]);
+for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+ctx.closePath();
+if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1; ctx.stroke(); }
+},
+box3D(xa, xb, za, zb, y0, y1, col) {
+const q = g.P;
+g.poly([q(xa, za, y1), q(xb, za, y1), q(xb, zb, y1), q(xa, zb, y1)], shadeColor(col, 1.18));
+g.poly([q(xb, za, y0), q(xb, za, y1), q(xb, zb, y1), q(xb, zb, y0)], shadeColor(col, 0.72));
+const [f1x, f1y] = q(xa, za, y0), [f2x, f2y] = q(xb, za, y1);
+const grad = ctx.createLinearGradient(0, f2y, 0, f1y);
+grad.addColorStop(0, shadeColor(col, 1.02));
+grad.addColorStop(1, shadeColor(col, 0.85));
+ctx.fillStyle = grad;
+ctx.fillRect(f1x, f2y, f2x - f1x, f1y - f2y);
+ctx.strokeStyle = shadeColor(col, 0.65);
+ctx.lineWidth = 1;
+ctx.strokeRect(f1x, f2y, f2x - f1x, f1y - f2y);
+},
+text(str, x, y, o = {}) {
+ctx.font = `${o.weight || 700} ${o.size || 13}px ${o.mono ? g.theme.fontMono : g.theme.fontBody}`;
+ctx.textAlign = o.align || "left";
+ctx.textBaseline = o.baseline || "alphabetic";
+ctx.fillStyle = o.color || g.theme.ink;
+ctx.fillText(str, x, y);
+},
+arrow(x1, y1, x2, y2, color, w = 3) {
+ctx.strokeStyle = color; ctx.fillStyle = color;
+ctx.lineWidth = w; ctx.lineCap = "round";
+ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+const ang = Math.atan2(y2 - y1, x2 - x1), hs = Math.max(8, w * 3.3);
+ctx.beginPath();
+ctx.moveTo(x2, y2);
+ctx.lineTo(x2 - hs * Math.cos(ang - 0.45), y2 - hs * Math.sin(ang - 0.45));
+ctx.lineTo(x2 - hs * Math.cos(ang + 0.45), y2 - hs * Math.sin(ang + 0.45));
+ctx.closePath(); ctx.fill();
+},
+callout(txt, tx, ty, lx, ly, alpha) {
+const a = alpha !== undefined ? alpha : g.labelAlpha;
+if (a < 0.02) return;
+ctx.save();
+ctx.globalAlpha = a;
+ctx.strokeStyle = g.theme.muted; ctx.lineWidth = 1.2;
+ctx.beginPath();
+ctx.moveTo(lx, ly + (ly < ty ? 8 : -10));
+ctx.lineTo(lx, (ly + ty) / 2);
+ctx.lineTo(tx, ty);
+ctx.stroke();
+ctx.fillStyle = g.theme.muted;
+ctx.beginPath(); ctx.arc(tx, ty, 2.5, 0, Math.PI * 2); ctx.fill();
+g.text(txt, lx, ly + (ly < ty ? 6 : -6), {
+size: 14, align: "center",
+baseline: ly < ty ? "bottom" : "top",
+color: shadeColor(g.theme.muted, 0.8)
+});
+ctx.restore();
+},
+graphInset(o) {
+const x = o.x, y = o.y, w = o.w || 234, h = o.h || 150;
+ctx.save();
+ctx.globalAlpha = 0.96;
+ctx.fillStyle = g.theme.surface;
+ctx.strokeStyle = shadeColor(g.theme.ground, 0.95);
+ctx.lineWidth = 1.5;
+ctx.beginPath();
+if (ctx.roundRect) ctx.roundRect(x, y, w, h, 10); else ctx.rect(x, y, w, h);
+ctx.fill(); ctx.stroke();
+if (o.title) g.text(o.title, x + 14, y + 10, { size: 11, weight: 800, color: g.theme.muted, baseline: "top" });
+const ax = x + 36, ay = y + h - 24, aw = w - 52, ah = h - 58;
+ctx.strokeStyle = g.theme.muted; ctx.lineWidth = 1;
+ctx.beginPath();
+ctx.moveTo(ax, ay - ah); ctx.lineTo(ax, ay); ctx.lineTo(ax + aw, ay);
+ctx.stroke();
+if (o.xLabel) g.text(o.xLabel, ax + aw + 4, ay - 4, { size: 10, color: g.theme.muted });
+if (o.yLabel) g.text(o.yLabel, ax - 12, ay - ah - 2, { size: 10, color: g.theme.muted });
+ctx.restore();
+return { ax, ay, aw, ah, px: (fx) => ax + fx * aw, py: (fy) => ay - fy * ah };
+}
+};
+return g;
+}
+function start(config, theme, SimClass, mount) {
+const th = applyTheme(theme);
+const chrome = buildChrome(config, mount);
+const S = chrome.config.strings;
+function fail(msg) {
+chrome.showError(msg);
+throw new Error("LabKit: " + msg);
+}
+if (typeof SimClass !== "function") fail("Sim class is missing or not a class.");
+for (const m of ["reset", "step", "draw", "values"]) {
+if (typeof SimClass.prototype[m] !== "function") fail(`Sim is missing required method ${m}()`);
+}
+const g = makeDrawKit(chrome, th);
+let sim;
+try {
+sim = new SimClass(chrome.params());
+} catch (e) {
+fail("Sim constructor threw: " + (e && e.message ? e.message : e));
+}
+let state = "idle";
+let t = 0;
+let raf = 0;
+let last = performance.now();
+function setState(s) {
+state = s;
+chrome.setRunLabel(s === "running" ? S.pause : s === "done" ? S.runAgain : s === "paused" ? S.resume : S.start);
+}
+function hardReset() {
+t = 0;
+setState("idle");
+try { sim.reset(chrome.params()); } catch (e) { die(e); }
+}
+function die(e) {
+cancelAnimationFrame(raf);
+chrome.showError((e && e.stack) ? e.stack.split("\n").slice(0, 4).join("\n") : String(e));
+console.error(e);
+}
+chrome.onChange((id, v) => {
+if (sim.onChange) { try { sim.onChange(id, v, chrome.params()); } catch (e) { die(e); return; } }
+hardReset();
+});
+chrome.onReset(hardReset);
+chrome.onRun(() => {
+if (state === "done") { t = 0; try { sim.reset(chrome.params()); } catch (e) { die(e); return; } setState("running"); }
+else if (state === "running") setState("paused");
+else setState("running");
+});
+function frame(now) {
+const dt = Math.min(0.05, (now - last) / 1000);
+last = now;
+try {
+if (state === "running") {
+t += dt;
+if (sim.step(dt, t) === "done") setState("done");
+}
+const target = state === "running" ? 0.15 : 1;
+g.labelAlpha += (target - g.labelAlpha) * Math.min(1, dt * 6);
+g.t = t; g.dt = dt; g.state = state; g.params = chrome.params();
+sim.draw(g);
+const vals = sim.values() || {};
+for (const [id, patch] of Object.entries(vals)) {
+if (id === "_note") chrome.setNote(patch);
+else chrome.setStat(id, patch);
+}
+} catch (e) {
+die(e);
+return;
+}
+raf = requestAnimationFrame(frame);
+}
+hardReset();
+raf = requestAnimationFrame(frame);
+return {
+chrome, sim, drawKit: g,
+state: () => state,
+reset: hardReset,
+stop: () => cancelAnimationFrame(raf)
+};
+}
+window.LabKit = { version: VERSION, applyTheme, buildChrome, start };
+})();
+
+/*__LK_SIM_BEGIN__*/
+// Measuring g by free fall: electromagnet + trapdoor timer (BOX 2.2).
+// ------------------------------------------------------------------
+// 1. World geometry (metres) & timing constants
+// ------------------------------------------------------------------
+const G_TRUE = 9.81;
+const SLOW = 0.35;                 // playback rate: physics seconds per animation second
+const BX = 1.28;                   // drop line: ball / electromagnet / trapdoor centre x
+const TRAP_Y = 0.10;               // top surface of the trapdoor
+const R = 0.05;                    // steel ball radius (slightly exaggerated for visibility)
+const ROD_X = 0.80;                // retort-stand rod x
+const RULE_X = 1.62;               // metre rule x
+const SERIES_H = [0.4, 0.8, 1.2, 1.6, 2.0];
+const HOLD = 0.55, POST = 0.75, MOVE = 0.9;   // non-physics phase lengths (animation s)
+
+class Sim {
+  constructor(P) { this.reset(P); }
+
+  reset(P) {                       // everything derives from P
+    this.p = P;
+    this.series = P.mode === "series";
+    this.lag = P.magnet === "ideal" ? 0 : P.magnet === "real" ? 0.005 : P.lagMs / 1000;
+    this.idx = 0;                  // series drop index
+    this.h = this.series ? SERIES_H[0] : P.h;
+    this.phase = this.series ? "hold" : "drop";
+    this.phaseT = 0;               // animation seconds inside current phase
+    this.simT = 0;                 // physics seconds since timer start (current drop)
+    this.timerT = 0;               // what the timer face shows (s)
+    this.door = 0;                 // trapdoor opening 0 (closed) .. 1 (open)
+    this.ballY = this.attachY();   // ball centre height
+    this.vImp = 0;                 // impact speed, for the post-impact fall
+    this.pts = [];                 // measured [t^2, h] points (series)
+    this.fit = null;               // { m, b, g } least-squares line
+    this.result = null;            // last completed drop { t, g }
+  }
+
+  // ------------------------------------------------------------------
+  // 2. Physics model (closed form)
+  // ------------------------------------------------------------------
+  attachY() { return TRAP_Y + this.h + R; }              // ball centre when held
+  tFall() { return Math.sqrt(2 * this.h / G_TRUE); }     // true free-fall time
+  tMeas() { return this.lag + this.tFall(); }            // what the timer records
+  quant(t) { return Math.floor(t * 1000) / 1000; }       // 1 ms timer resolution
+  yAt(ts) {                                              // ball centre at physics time ts
+    if (ts <= this.lag) return this.attachY();           // field still collapsing: held
+    const y = this.attachY() - 0.5 * G_TRUE * Math.pow(ts - this.lag, 2);
+    return Math.max(TRAP_Y + R, y);
+  }
+  fitLine() {                                            // least squares h = m·t² + b
+    const n = this.pts.length;
+    let sx = 0, sy = 0, sxy = 0, sxx = 0;
+    for (const [x, y] of this.pts) { sx += x; sy += y; sxy += x * y; sxx += x * x; }
+    const d = n * sxx - sx * sx;
+    if (Math.abs(d) < 1e-12) return null;
+    const m = (n * sxy - sx * sy) / d;
+    return { m: m, b: (sy - m * sx) / n, g: 2 * m };
+  }
+
+  // ------------------------------------------------------------------
+  // 3. Measurement / sequencing
+  // ------------------------------------------------------------------
+  step(dt, t) {
+    if (this.phase === "hold") {                         // series: settle before release
+      this.phaseT += dt;
+      if (this.phaseT >= HOLD) { this.phase = "drop"; this.phaseT = 0; this.simT = 0; }
+    } else if (this.phase === "drop") {                  // timer running
+      this.simT += dt * SLOW;
+      const tm = this.tMeas();
+      this.timerT = Math.min(this.simT, tm);
+      this.ballY = this.yAt(this.simT);
+      if (this.simT >= tm) {                             // ball strikes the trapdoor
+        const tq = Math.max(this.quant(tm), 0.001);
+        this.result = { t: tq, g: 2 * this.h / (tq * tq) };
+        if (this.series) this.pts.push([tq * tq, this.h]);
+        this.vImp = G_TRUE * this.tFall();
+        this.phase = "post"; this.phaseT = 0;
+      }
+    } else if (this.phase === "post") {                  // door swings, ball drops through
+      this.phaseT += dt;
+      this.door = Math.min(1, this.phaseT / 0.3);
+      const tau = this.phaseT * SLOW;
+      this.ballY = Math.max(R, TRAP_Y + R - this.vImp * tau - 0.5 * G_TRUE * tau * tau);
+      if (this.phaseT >= POST) {
+        if (!this.series) return "done";
+        if (this.idx === SERIES_H.length - 1) { this.fit = this.fitLine(); return "done"; }
+        this.fromH = this.h; this.phase = "move"; this.phaseT = 0;
+      }
+    } else if (this.phase === "move") {                  // raise magnet to next height
+      this.phaseT += dt;
+      const f = Math.min(1, this.phaseT / MOVE), s = f * f * (3 - 2 * f);
+      this.h = this.fromH + (SERIES_H[this.idx + 1] - this.fromH) * s;
+      this.door = Math.max(0, 1 - this.phaseT / 0.25);
+      this.ballY = this.attachY();
+      this.timerT = 0;
+      if (this.phaseT >= MOVE) {
+        this.idx += 1; this.h = SERIES_H[this.idx];
+        this.ballY = this.attachY();
+        this.phase = "hold"; this.phaseT = 0; this.result = null;
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // 4. Scene
+  // ------------------------------------------------------------------
+  draw(g) {
+    const ctx = g.ctx;
+    g.clear();
+    g.setView({ OX: 40, BY: 428, S: 162, TX: 60, TZ: 40 });
+
+    // floor slab
+    g.box3D(-0.15, 5.9, -0.45, 0.55, -0.08, 0, g.theme.ground);
+
+    // ---- retort stand + electromagnet ----
+    const hMax = this.series ? SERIES_H[SERIES_H.length - 1] : this.p.h;
+    const magB = TRAP_Y + this.h + 2 * R;                // magnet underside (ball hangs here)
+    const rodTop = TRAP_Y + hMax + 2 * R + 0.30;
+    g.box3D(0.52, 1.08, -0.17, 0.17, 0, 0.045, "#4C5560");            // base plate
+    g.box3D(ROD_X - 0.02, ROD_X + 0.02, -0.018, 0.018, 0.045, rodTop, "#8B93A0"); // rod
+    g.box3D(ROD_X - 0.035, ROD_X + 0.035, -0.03, 0.03, magB + 0.10, magB + 0.17, "#5A6470"); // boss
+    g.box3D(ROD_X, BX + 0.03, -0.014, 0.014, magB + 0.11, magB + 0.145, "#8B93A0"); // arm
+    g.box3D(BX - 0.09, BX + 0.09, -0.055, 0.055, magB, magB + 0.11, "#606870");     // magnet body
+    g.box3D(BX - 0.093, BX + 0.093, -0.058, 0.058, magB + 0.025, magB + 0.075, "#B87333"); // winding
+
+    // ---- electronic timer (floor, right) ----
+    const timing = this.phase === "drop" && this.simT > 0 && this.simT < this.tMeas();
+    g.box3D(2.15, 2.98, -0.16, 0.16, 0, 0.36, "#39414C");
+    g.poly([g.P(2.23, -0.165, 0.305), g.P(2.90, -0.165, 0.305),
+            g.P(2.90, -0.165, 0.115), g.P(2.23, -0.165, 0.115)], "#0E1216");
+    const tc = g.P(2.565, -0.165, 0.21);
+    g.text(this.quant(this.timerT).toFixed(3) + " s", tc[0], tc[1],
+           { size: 22, mono: true, align: "center", baseline: "middle",
+             color: timing ? "#5EE08A" : "#8FA98F" });
+    const tl = g.P(2.565, -0.165, 0.055);
+    g.text("ELECTRONIC TIMER · ms", tl[0], tl[1],
+           { size: 9, align: "center", baseline: "middle", color: "#9AA7B4" });
+
+    // ---- cables: magnet → timer, trapdoor → timer ----
+    const cable = (a, b, sag, col) => {
+      ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath();
+      ctx.moveTo(a[0], a[1]);
+      ctx.quadraticCurveTo((a[0] + b[0]) / 2, Math.max(a[1], b[1]) + sag, b[0], b[1]);
+      ctx.stroke();
+    };
+    cable(g.P(BX + 0.09, 0, magB + 0.05), g.P(2.35, -0.10, 0.36), 60, "#8C3B2E");
+    cable(g.P(BX + 0.22, 0, 0.02), g.P(2.25, -0.12, 0.03), 10, "#44403C");
+
+    // ---- trapdoor switch ----
+    g.box3D(BX - 0.24, BX - 0.16, -0.11, 0.11, 0, TRAP_Y - 0.012, "#7A5A3A"); // hinge rail
+    g.box3D(BX + 0.16, BX + 0.24, -0.11, 0.11, 0, TRAP_Y - 0.012, "#7A5A3A"); // contact rail
+    const hingeX = BX - 0.17, a = this.door * 1.15;
+    const ex = hingeX + 0.34 * Math.cos(a), ey = TRAP_Y - 0.34 * Math.sin(a);
+    g.poly([g.P(hingeX, -0.10, TRAP_Y), g.P(ex, -0.10, ey),
+            g.P(ex, 0.10, ey), g.P(hingeX, 0.10, TRAP_Y)],
+           "#C08A4E", g.shade("#C08A4E", 0.7), 1.5);
+    const led = g.P(BX + 0.20, -0.11, TRAP_Y + 0.01);    // circuit LED: green closed, red broken
+    ctx.fillStyle = this.door > 0.05 ? "#E03131" : "#2BB673";
+    ctx.beginPath(); ctx.arc(led[0], led[1], 3.5, 0, Math.PI * 2); ctx.fill();
+
+    // ---- metre rule ----
+    const rx = g.P(RULE_X, 0, 0)[0];
+    const ry0 = g.P(RULE_X, 0, TRAP_Y)[1], ry1 = g.P(RULE_X, 0, TRAP_Y + 2.06)[1];
+    ctx.fillStyle = "#F2E3B6"; ctx.fillRect(rx - 9, ry1, 18, ry0 - ry1);
+    ctx.strokeStyle = "#C9AE72"; ctx.lineWidth = 1; ctx.strokeRect(rx - 9, ry1, 18, ry0 - ry1);
+    for (let mm = 0; mm <= 2.0001; mm += 0.1) {
+      const py = g.P(RULE_X, 0, TRAP_Y + mm)[1];
+      const major = Math.round(mm * 10) % 5 === 0;
+      ctx.strokeStyle = "#6B5636"; ctx.beginPath();
+      ctx.moveTo(rx - 9, py); ctx.lineTo(rx - 9 + (major ? 10 : 5), py); ctx.stroke();
+      if (major && mm > 0.01)
+        g.text(mm.toFixed(1), rx + 12, py, { size: 10, color: g.theme.muted, baseline: "middle" });
+    }
+    const hy = g.P(RULE_X, 0, TRAP_Y + this.h)[1];       // accent pointer at current h
+    g.poly([[rx - 22, hy - 5], [rx - 22, hy + 5], [rx - 11, hy]], g.theme.accent);
+
+    // ---- height dimension arrow ----
+    ctx.save(); ctx.globalAlpha = Math.max(0.35, g.labelAlpha);
+    const dx = g.P(1.02, 0, 0)[0];
+    const dy1 = g.P(1.02, 0, TRAP_Y)[1], dy2 = g.P(1.02, 0, TRAP_Y + this.h)[1];
+    const dym = (dy1 + dy2) / 2;
+    g.arrow(dx, dym, dx, dy2, g.theme.muted, 1.6);
+    g.arrow(dx, dym, dx, dy1, g.theme.muted, 1.6);
+    g.text("h = " + this.h.toFixed(2) + " m", dx - 8, dym,
+           { size: 13, align: "right", baseline: "middle", color: g.theme.muted });
+    ctx.restore();
+
+    // ---- steel ball + contact shadow ----
+    const bp = g.P(BX, 0, this.ballY), rp = R * 162;
+    const shadowY = this.door > 0.4 ? 0 : TRAP_Y;
+    const sp = g.P(BX, 0, shadowY);
+    const prox = Math.max(0, 1 - (this.ballY - shadowY) / 2.4);
+    ctx.fillStyle = "rgba(70,45,25," + (0.10 + 0.16 * prox).toFixed(3) + ")";
+    ctx.beginPath();
+    ctx.ellipse(sp[0], sp[1], rp * (0.65 + 0.55 * prox), rp * 0.30 * (0.65 + 0.55 * prox),
+                0, 0, Math.PI * 2);
+    ctx.fill();
+    const grad = ctx.createRadialGradient(bp[0] - rp * 0.35, bp[1] - rp * 0.4, rp * 0.12,
+                                          bp[0], bp[1], rp);
+    grad.addColorStop(0, "#F2F5F8"); grad.addColorStop(0.55, "#A8B1BC"); grad.addColorStop(1, "#525A64");
+    ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(bp[0], bp[1], rp, 0, Math.PI * 2); ctx.fill();
+    if (this.phase !== "move" && this.ballY < this.attachY() - 0.01 && this.ballY > R + 0.01) {
+      const v = Math.sqrt(2 * G_TRUE * Math.max(0, this.attachY() - this.ballY));
+      g.arrow(bp[0] + rp + 12, bp[1], bp[0] + rp + 12, bp[1] + Math.min(52, 10 + v * 8),
+              g.theme.danger, 2.5);
+    }
+
+    // ---- h–t² graph inset (series) ----
+    if (this.series) {
+      const box = g.graphInset({ x: 662, y: 14, w: 324, h: 196,
+                                 title: "h AGAINST t²", xLabel: "t² (s²)", yLabel: "h (m)" });
+      const XM = 0.48, YM = 2.2;
+      ctx.save(); ctx.setLineDash([5, 4]);               // dashed true line, slope g/2
+      ctx.strokeStyle = g.theme.good; ctx.lineWidth = 1.4; ctx.beginPath();
+      const xr = Math.min(XM, YM / (G_TRUE / 2));
+      ctx.moveTo(box.px(0), box.py(0));
+      ctx.lineTo(box.px(xr / XM), box.py((G_TRUE / 2) * xr / YM));
+      ctx.stroke(); ctx.restore();
+      g.text("slope g/2 (true)", box.ax + box.aw - 6, box.ay + 14,
+             { size: 10, color: g.theme.good, align: "right" });
+      if (this.fit) {                                    // student's best-fit line
+        const yA = 0.02 * this.fit.m + this.fit.b, yB = 0.46 * this.fit.m + this.fit.b;
+        ctx.strokeStyle = g.theme.info; ctx.lineWidth = 2; ctx.beginPath();
+        ctx.moveTo(box.px(0.02 / XM), box.py(yA / YM));
+        ctx.lineTo(box.px(0.46 / XM), box.py(yB / YM));
+        ctx.stroke();
+      }
+      for (const [x, y] of this.pts) {
+        ctx.fillStyle = g.theme.accent; ctx.beginPath();
+        ctx.arc(box.px(x / XM), box.py(y / YM), 4, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    // ---- annotations ----
+    if (g.state === "running")
+      g.text("SLOW MOTION ×" + SLOW.toFixed(2), 16, 22, { size: 11, color: g.theme.muted });
+    g.callout("electromagnet", ...g.P(BX - 0.09, 0, magB + 0.05), 452, 40);
+    if (this.lag > 0)
+      g.callout("release lag ≈ " + Math.round(this.lag * 1000) + " ms",
+                ...g.P(BX + 0.09, 0, magB + 0.09), 452, 76);
+    g.callout("steel ball", bp[0] + 4, bp[1] - 4, 452, 112);
+    g.callout("metre rule", ...g.P(RULE_X + 0.05, 0, TRAP_Y + 1.55), 380, 150);
+    g.callout("trapdoor switch", ...g.P(BX + 0.15, 0.05, TRAP_Y), 560, 434);
+    g.callout("ms timer", ...g.P(2.90, -0.16, 0.30), 600, 330);
+  }
+
+  // ------------------------------------------------------------------
+  // 5. Dashboard
+  // ------------------------------------------------------------------
+  values() {
+    const timing = this.phase === "drop" && this.simT > 0 && this.simT < this.tMeas();
+    const out = {
+      timer: { value: this.quant(this.timerT).toFixed(3), live: timing },
+      drop: this.h.toFixed(2),
+      gtrue: "9.81"
+    };
+    if (this.series) {
+      out.gmeas = { value: this.fit ? this.fit.g.toFixed(2) : "—", label: "g from h–t² gradient" };
+      out.drops = { value: this.pts.length + " / " + SERIES_H.length, hidden: false };
+      out._note = "h = ½gt², so the h–t² plot is a straight line of gradient g/2. " +
+        (this.lag > 0
+          ? "The release lag stretches every t, so the points sit right of the dashed true-g line and the fitted gradient reads slightly low."
+          : "With an ideal release the points fall on the dashed true-g line.");
+    } else {
+      out.gmeas = { value: this.result ? this.result.g.toFixed(2) : "—", label: "Measured g = 2h/t²" };
+      out.drops = { value: "—", hidden: true };
+      out._note = this.lag > 0
+        ? "The magnet's field takes ~" + Math.round(this.lag * 1000) +
+          " ms to collapse, so the ball leaves AFTER the timer starts: t is too big and g = 2h/t² comes out below 9.81 — a systematic error."
+        : "Ideal release: the ball leaves the instant the timer starts, so g = 2h/t² lands on 9.81 (within the 1 ms timer resolution).";
+    }
+    return out;
+  }
+}
+
+/*__LK_SIM_END__*/
+LabKit.start(CONFIG, THEME, Sim, document.getElementById("lab-root"));
+</script>
+</body>
+</html>
