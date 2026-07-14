@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "preset": "textbook-cool",
+    "source": "stock archetype: cool science textbook (blue-grey page, blue headers, teal secondary)"
+  },
+  "palette": {
+    "pageBg": "#EDF2F7",
+    "surface": "#FFFFFF",
+    "surfaceAlt": "#F3F7FB",
+    "line": "#D7E0E9",
+    "ink": "#21303C",
+    "inkMuted": "#5E7385",
+    "accent": "#2563B0",
+    "accentContrast": "#FFFFFF",
+    "good": "#1E9E5A",
+    "danger": "#B91C1C",
+    "info": "#0E7C86",
+    "canvasSky": "#F4F8FB",
+    "canvasGround": "#C9D5DF",
+    "inkOnCanvas": "#21303C"
+  },
+  "font": {
+    "body": "-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+    "heading": "inherit",
+    "mono": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+    "baseSizePx": 15
+  },
+  "shape": {
+    "radiusPx": 8,
+    "borderPx": 1.5,
+    "shadow": "soft"
+  }
+}

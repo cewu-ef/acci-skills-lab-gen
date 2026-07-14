@@ -3,13 +3,36 @@
 The theme carries every visual token the lab chrome and canvas derive from.
 **One theme per textbook/course, reused across all its labs.**
 
-## Before extracting: check for an existing preset
+## Before extracting — cheaper paths first
 
-Try reading workspace files under `themes/` (e.g. attempt
+**1. Workspace reuse.** Try reading workspace files under `themes/` (e.g. attempt
 `read_file themes/<likely-slug>.theme.json`; a failed read's error message may
 list what exists). If a preset plausibly matching this material's book/course
-exists, use it and skip extraction entirely. Consistency across a textbook's
+exists, use it and skip everything below. Consistency across a textbook's
 labs matters more than a marginally better per-page match.
+
+**2. Stock presets.** Five validated presets ship with the skill under
+`lab-gen/presets/`. Classify the material against this table — you already know
+the answer from studying it in step 1:
+
+| Stock preset | Use when the material looks like |
+|---|---|
+| `textbook-warm` | warm-toned print textbook: cream/peach page, coral/orange/red box headers |
+| `textbook-cool` | cool-toned print textbook: white or blue-grey page, blue headers |
+| `web-neutral` | web page or plain PDF handout: white cards, grey text, blue links, flat |
+| `academic-serif` | bookish/older academic text: cream paper, serif body, deep muted accent |
+| `dark-slate` | dark screen-first material: slides or dark-mode sites |
+
+If one fits, copy it into the workspace as `themes/<slug>.theme.json` and use
+**delta-extraction**: keep everything, adjust only the identity tokens that
+visibly differ on the page — usually some of `accent`, `pageBg`, `canvasGround`,
+`info` — and set `meta.preset` to your slug and `meta.source` to
+`"<stock-name> + <material>"`. Naming: material from a specific textbook/course →
+a slug for that book (future labs then hit path 1); generic material (a random
+web page) → keep the stock name unchanged, copy as-is.
+
+**3. Full extraction** (the rest of this document) only when no stock preset is
+close and the material has a strong visual identity worth matching.
 
 ## Schema (all keys shown; palette roles marked * are required)
 

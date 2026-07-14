@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Investigating Springs</title>
+<style>
+* { box-sizing: border-box; }
+body {
+margin: 0;
+background: var(--lk-page-bg);
+font-family: var(--lk-font-body);
+font-size: var(--lk-base-size);
+color: var(--lk-ink);
+}
+.lk-page {
+max-width: 1020px;
+margin: 0 auto;
+padding: 28px 20px 48px;
+display: flex;
+flex-direction: column;
+gap: 14px;
+}
+.lk-header { text-align: center; }
+.lk-header h1 {
+margin: 0;
+font-family: var(--lk-font-heading);
+font-size: 1.65em;
+font-weight: 800;
+color: var(--lk-ink);
+}
+.lk-subtitle {
+margin: 5px 0 0;
+font-size: 0.93em;
+color: var(--lk-ink-muted);
+}
+.lk-card {
+background: var(--lk-surface);
+border: var(--lk-border-w) solid var(--lk-line);
+border-radius: var(--lk-radius);
+box-shadow: var(--lk-shadow);
+}
+.lk-controlbar {
+position: relative;
+padding: 14px 16px;
+display: flex;
+flex-wrap: wrap;
+gap: 16px 22px;
+align-items: end;
+justify-content: space-between;
+z-index: 10;
+}
+.lk-controls { display: flex; flex-wrap: wrap; gap: 16px 22px; }
+.lk-field { display: flex; flex-direction: column; gap: 6px; }
+.lk-label {
+font-size: 0.73em;
+font-weight: 800;
+letter-spacing: 0.8px;
+text-transform: uppercase;
+color: var(--lk-ink-muted);
+}
+.lk-select {
+padding: 9px 10px;
+border-radius: calc(var(--lk-radius) - 2px);
+border: var(--lk-border-w) solid var(--lk-line-strong);
+background: var(--lk-surface-alt);
+color: var(--lk-ink);
+font-family: var(--lk-font-body);
+font-size: 0.93em;
+font-weight: 700;
+cursor: pointer;
+outline: none;
+}
+.lk-select:focus-visible { border-color: var(--lk-accent); }
+.lk-buttons { display: flex; gap: 8px; }
+.lk-btn {
+padding: 10px 16px;
+border-radius: calc(var(--lk-radius) - 1px);
+border: var(--lk-border-w) solid var(--lk-line-strong);
+background: var(--lk-surface-alt);
+color: var(--lk-ink);
+font-family: var(--lk-font-body);
+font-size: 0.93em;
+font-weight: 700;
+cursor: pointer;
+}
+.lk-btn:focus-visible, .lk-btn-primary:focus-visible { outline: 2px solid var(--lk-accent); outline-offset: 1px; }
+.lk-btn[aria-expanded="true"] { background: var(--lk-surface-raise); border-color: var(--lk-accent); }
+.lk-btn-primary {
+padding: 10px 26px;
+border: none;
+background: var(--lk-accent);
+color: var(--lk-accent-contrast);
+font-weight: 800;
+box-shadow: 0 2px 0 var(--lk-accent-strong);
+}
+.lk-btn-primary:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--lk-accent-strong); }
+.lk-popover {
+position: absolute;
+top: 100%;
+right: 0;
+margin-top: 10px;
+width: min(300px, 92vw);
+padding: 18px 20px;
+box-shadow: var(--lk-shadow-pop);
+z-index: 50;
+display: flex;
+flex-direction: column;
+gap: 15px;
+}
+.lk-popover[hidden] { display: none; }
+.lk-popover-title {
+font-size: 0.73em;
+font-weight: 800;
+letter-spacing: 0.8px;
+text-transform: uppercase;
+color: var(--lk-ink);
+}
+.lk-param { display: flex; flex-direction: column; gap: 5px; }
+.lk-param[hidden] { display: none; }
+.lk-param-label { font-size: 0.8em; font-weight: 700; color: var(--lk-ink-muted); }
+.lk-param-value { color: var(--lk-accent-ink); }
+.lk-param input[type="range"] { width: 100%; accent-color: var(--lk-accent); margin: 0; }
+.lk-stage { position: relative; overflow: hidden; background: var(--lk-canvas-sky); }
+.lk-stage canvas { display: block; width: 100%; height: auto; touch-action: none; }
+.lk-stats {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+gap: 10px;
+}
+.lk-stat { padding: 12px 14px; }
+.lk-stat[hidden] { display: none; }
+.lk-stat-label {
+font-size: 0.73em;
+font-weight: 800;
+letter-spacing: 0.8px;
+text-transform: uppercase;
+color: var(--lk-ink-muted);
+}
+.lk-stat-value {
+font-family: var(--lk-font-mono);
+font-size: 1.85em;
+color: var(--lk-ink);
+margin-top: 2px;
+}
+.lk-stat-unit { font-size: 0.5em; color: var(--lk-ink-muted); }
+.lk-stat[data-variant="accent"] { background: var(--lk-surface-raise); border-color: var(--lk-accent-soft); }
+.lk-stat[data-variant="accent"] .lk-stat-label,
+.lk-stat[data-variant="accent"] .lk-stat-value { color: var(--lk-accent-ink); }
+.lk-stat[data-variant="info"] { border-color: var(--lk-info-soft); }
+.lk-stat[data-variant="info"] .lk-stat-label,
+.lk-stat[data-variant="info"] .lk-stat-value { color: var(--lk-info); }
+.lk-stat[data-state="live"] .lk-stat-value { color: var(--lk-good); }
+.lk-note {
+margin: 0;
+text-align: center;
+font-size: 0.87em;
+font-weight: 600;
+color: var(--lk-ink-muted);
+}
+.lk-error {
+padding: 14px 16px;
+border: 2px solid var(--lk-danger);
+border-radius: var(--lk-radius);
+background: var(--lk-surface);
+color: var(--lk-danger);
+font-family: var(--lk-font-mono);
+font-size: 0.85em;
+white-space: pre-wrap;
+overflow-wrap: anywhere;
+}
+@media (max-width: 520px) {
+.lk-page { padding: 16px 10px 32px; gap: 10px; }
+.lk-controlbar { align-items: stretch; }
+.lk-controls, .lk-buttons { width: 100%; }
+.lk-buttons { justify-content: stretch; }
+.lk-buttons .lk-btn, .lk-buttons .lk-btn-primary { flex: 1; }
+.lk-select { width: 100%; }
+.lk-field { flex: 1 1 100%; }
+.lk-stats { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+}
+</style>
+</head>
+<body>
+<div id="lab-root"></div>
+<script type="application/json" id="lk-source">
+{"labkit":"0.1.0","theme":{"meta":{"preset":"cie-phys-coral","source":"Screenshot 2026-07-10 at 15.47.35.png (BOX 1.1: Laboratory measurements of speed)"},"palette":{"pageBg":"#F8E2CF","surface":"#FFFAF4","surfaceAlt":"#FBEEDF","line":"#EDD2B8","ink":"#33251C","inkMuted":"#9C6B44","accent":"#E46440","accentContrast":"#FFFFFF","good":"#1E9E5A","danger":"#B91C1C","info":"#15828A","canvasSky":"#FDF3E7","canvasGround":"#E9CFAE","inkOnCanvas":"#33251C"},"font":{"body":"-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif","heading":"inherit","mono":"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace","baseSizePx":15},"shape":{"radiusPx":10,"borderPx":1.5,"shadow":"soft"}},"config":{"id":"spring-combinations-lab","title":"Investigating Springs","subtitle":"BOX 7.1 \u00b7 Interactive lab","layout":"standard","canvas":{"w":1000,"h":470},"controls":[{"id":"arrangement","label":"Arrangement","width":300,"value":"single","options":[{"value":"single","label":"Single spring"},{"value":"series","label":"Two springs in series (Figure 7.9a)"},{"value":"parallel","label":"Two springs in parallel (Figure 7.9b)"}]}],"params":[{"id":"k","label":"Force constant k (one spring)","min":25,"max":60,"step":5,"value":40,"unit":"N/m","decimals":0},{"id":"mass","label":"Load mass","min":0.1,"max":0.25,"step":0.05,"value":0.15,"unit":"kg","decimals":2}],"stats":[{"id":"force","label":"Load F","unit":"N"},{"id":"ext","label":"Extension x","unit":"mm"},{"id":"kmeas","label":"Measured k_eq","unit":"N/m","variant":"accent"},{"id":"kpred","label":"Predicted k_eq","unit":"N/m","variant":"info"}],"note":"Predict first: if one spring has force constant k, what is the equivalent force constant of two in series? Two in parallel? Run the experiment to check."},"sim":"inline:lk-sim-markers"}
+</script>
+<script>
+"use strict";
+const THEME = {"meta":{"preset":"cie-phys-coral","source":"Screenshot 2026-07-10 at 15.47.35.png (BOX 1.1: Laboratory measurements of speed)"},"palette":{"pageBg":"#F8E2CF","surface":"#FFFAF4","surfaceAlt":"#FBEEDF","line":"#EDD2B8","ink":"#33251C","inkMuted":"#9C6B44","accent":"#E46440","accentContrast":"#FFFFFF","good":"#1E9E5A","danger":"#B91C1C","info":"#15828A","canvasSky":"#FDF3E7","canvasGround":"#E9CFAE","inkOnCanvas":"#33251C"},"font":{"body":"-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif","heading":"inherit","mono":"ui-monospace, SFMono-Regular, Menlo, Consolas, monospace","baseSizePx":15},"shape":{"radiusPx":10,"borderPx":1.5,"shadow":"soft"}};
+const CONFIG = {"id":"spring-combinations-lab","title":"Investigating Springs","subtitle":"BOX 7.1 \u00b7 Interactive lab","layout":"standard","canvas":{"w":1000,"h":470},"controls":[{"id":"arrangement","label":"Arrangement","width":300,"value":"single","options":[{"value":"single","label":"Single spring"},{"value":"series","label":"Two springs in series (Figure 7.9a)"},{"value":"parallel","label":"Two springs in parallel (Figure 7.9b)"}]}],"params":[{"id":"k","label":"Force constant k (one spring)","min":25,"max":60,"step":5,"value":40,"unit":"N/m","decimals":0},{"id":"mass","label":"Load mass","min":0.1,"max":0.25,"step":0.05,"value":0.15,"unit":"kg","decimals":2}],"stats":[{"id":"force","label":"Load F","unit":"N"},{"id":"ext","label":"Extension x","unit":"mm"},{"id":"kmeas","label":"Measured k_eq","unit":"N/m","variant":"accent"},{"id":"kpred","label":"Predicted k_eq","unit":"N/m","variant":"info"}],"note":"Predict first: if one spring has force constant k, what is the equivalent force constant of two in series? Two in parallel? Run the experiment to check."};
+(() => {
+"use strict";
+const VERSION = "0.1.0";
+const THEME_DEFAULTS = {
+meta: {},
+palette: {
+pageBg: "#f6f4ef", surface: "#ffffff", surfaceAlt: "#f1ede4",
+ink: "#241f1a", inkMuted: "#8a7a66",
+accent: "#d4622a", accentContrast: "#ffffff",
+good: "#1e9e5a", warn: "#b45309", danger: "#b91c1c", info: "#0e7c86",
+canvasSky: "#fdf3e7", canvasGround: "#e9cfae", inkOnCanvas: "#3a2a22"
+},
+font: {
+body: "-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+heading: "inherit",
+mono: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+baseSizePx: 15
+},
+shape: { radiusPx: 11, borderPx: 1.5, shadow: "soft" }
+};
+const SHADOWS = {
+flat:  { card: "none", pop: "0 12px 28px rgba(0,0,0,0.18)" },
+soft:  { card: "0 3px 12px rgba(0,0,0,0.07)", pop: "0 18px 36px rgba(0,0,0,0.22)" },
+crisp: { card: "2px 2px 0 rgba(0,0,0,0.14)", pop: "4px 4px 0 rgba(0,0,0,0.2)" }
+};
+function deepMerge(base, over) {
+const out = {};
+for (const k of Object.keys(base)) {
+const b = base[k], o = over ? over[k] : undefined;
+out[k] = (b && typeof b === "object" && !Array.isArray(b))
+? deepMerge(b, o || {})
+: (o !== undefined ? o : b);
+}
+if (over) for (const k of Object.keys(over)) if (!(k in out)) out[k] = over[k];
+return out;
+}
+function shadeColor(color, f) {
+let r, g, b, a = null;
+if (color[0] === "#") {
+let h = color.slice(1);
+if (h.length === 3) h = h.replace(/./g, (c) => c + c);
+const n = parseInt(h.slice(0, 6), 16);
+r = (n >> 16) & 255; g = (n >> 8) & 255; b = n & 255;
+} else {
+const m = /rgba?\(([^)]+)\)/.exec(color);
+if (!m) return color;
+const parts = m[1].split(",").map(Number);
+[r, g, b] = parts; a = parts[3] ?? null;
+}
+r = Math.min(255, Math.round(r * f));
+g = Math.min(255, Math.round(g * f));
+b = Math.min(255, Math.round(b * f));
+return a === null ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${a})`;
+}
+function tintColor(color, t) {
+let h = color[0] === "#" ? color.slice(1) : null;
+if (h && h.length === 3) h = h.replace(/./g, (c) => c + c);
+if (!h) return color;
+const n = parseInt(h.slice(0, 6), 16);
+const mix = (c) => Math.round(c + (255 - c) * t);
+return `rgb(${mix((n >> 16) & 255)},${mix((n >> 8) & 255)},${mix(n & 255)})`;
+}
+function applyTheme(theme, root) {
+const th = deepMerge(THEME_DEFAULTS, theme || {});
+const p = th.palette, f = th.font, s = th.shape;
+const sh = SHADOWS[s.shadow] || SHADOWS.soft;
+const line = p.line || shadeColor(p.surfaceAlt, 0.9);
+const vars = {
+"--lk-page-bg": p.pageBg,
+"--lk-surface": p.surface,
+"--lk-surface-alt": p.surfaceAlt,
+"--lk-surface-raise": tintColor(p.accent, 0.88),
+"--lk-ink": p.ink,
+"--lk-ink-muted": p.inkMuted,
+"--lk-line": line,
+"--lk-line-strong": shadeColor(line, 0.88),
+"--lk-accent": p.accent,
+"--lk-accent-contrast": p.accentContrast,
+"--lk-accent-strong": shadeColor(p.accent, 0.72),
+"--lk-accent-soft": tintColor(p.accent, 0.55),
+"--lk-accent-ink": shadeColor(p.accent, 0.85),
+"--lk-good": p.good,
+"--lk-warn": p.warn,
+"--lk-danger": p.danger,
+"--lk-info": p.info,
+"--lk-info-soft": tintColor(p.info, 0.6),
+"--lk-canvas-sky": p.canvasSky,
+"--lk-canvas-ground": p.canvasGround,
+"--lk-font-body": f.body,
+"--lk-font-heading": f.heading === "inherit" ? f.body : f.heading,
+"--lk-font-mono": f.mono,
+"--lk-base-size": f.baseSizePx + "px",
+"--lk-radius": s.radiusPx + "px",
+"--lk-border-w": s.borderPx + "px",
+"--lk-shadow": sh.card,
+"--lk-shadow-pop": sh.pop
+};
+const el = root || document.documentElement;
+for (const [k, v] of Object.entries(vars)) el.style.setProperty(k, v);
+return th;
+}
+const STRINGS = {
+start: "Start", pause: "Pause", resume: "Resume", runAgain: "Run again",
+reset: "Reset", settings: "Settings", settingsTitle: "Experiment settings"
+};
+function normalizeConfig(config) {
+const c = Object.assign({ layout: "standard", controls: [], params: [], stats: [] }, config);
+c.canvas = Object.assign({ w: 1000, h: 470 }, config.canvas || {});
+c.strings = Object.assign({}, STRINGS, config.strings || {});
+return c;
+}
+function el(tag, cls, attrs) {
+const n = document.createElement(tag);
+if (cls) n.className = cls;
+if (attrs) for (const [k, v] of Object.entries(attrs)) {
+if (k === "text") n.textContent = v;
+else n.setAttribute(k, v);
+}
+return n;
+}
+function fmtParam(def, value) {
+const d = def.decimals !== undefined ? def.decimals : 2;
+return Number(value).toFixed(d) + (def.unit ? " " + def.unit : "");
+}
+function buildChrome(config, mount) {
+const c = normalizeConfig(config);
+const S = c.strings;
+const values = {};
+const changeCbs = [], runCbs = [], resetCbs = [];
+const page = el("div", "lk-page");
+const header = el("header", "lk-header");
+header.appendChild(el("h1", null, { text: c.title || "Interactive lab" }));
+if (c.subtitle) header.appendChild(el("p", "lk-subtitle", { text: c.subtitle }));
+page.appendChild(header);
+const bar = el("div", "lk-controlbar lk-card");
+const controlsBox = el("div", "lk-controls");
+const selectEls = {};
+for (const ctl of c.controls) {
+const field = el("div", "lk-field");
+const labId = "lk-lab-" + ctl.id;
+field.appendChild(el("span", "lk-label", { text: ctl.label || ctl.id, id: labId }));
+const sel = el("select", "lk-select", { "aria-labelledby": labId });
+if (ctl.width) sel.style.width = ctl.width + "px";
+for (const opt of ctl.options || []) {
+const o = el("option", null, { value: opt.value, text: opt.label });
+sel.appendChild(o);
+}
+sel.value = ctl.value !== undefined ? ctl.value : (ctl.options?.[0]?.value ?? "");
+values[ctl.id] = sel.value;
+sel.addEventListener("change", () => {
+values[ctl.id] = sel.value;
+refreshVisibility();
+emitChange(ctl.id, sel.value);
+});
+selectEls[ctl.id] = sel;
+field.appendChild(sel);
+controlsBox.appendChild(field);
+}
+bar.appendChild(controlsBox);
+const buttons = el("div", "lk-buttons");
+let settingsBtn = null, popover = null;
+const paramRows = {};
+if (c.params.length) {
+settingsBtn = el("button", "lk-btn", { type: "button", text: S.settings, "aria-expanded": "false", "aria-haspopup": "true" });
+buttons.appendChild(settingsBtn);
+popover = el("div", "lk-popover lk-card", { role: "group", "aria-label": S.settingsTitle, hidden: "" });
+popover.appendChild(el("div", "lk-popover-title", { text: S.settingsTitle }));
+for (const def of c.params) {
+const row = el("div", "lk-param", { "data-param": def.id });
+const label = el("span", "lk-param-label");
+label.appendChild(document.createTextNode((def.label || def.id) + " · "));
+const valSpan = el("span", "lk-param-value", { text: fmtParam(def, def.value) });
+label.appendChild(valSpan);
+row.appendChild(label);
+const input = el("input", null, {
+type: "range", min: def.min, max: def.max, step: def.step,
+value: def.value, "aria-label": def.label || def.id
+});
+values[def.id] = Number(def.value);
+input.addEventListener("input", () => {
+values[def.id] = Number(input.value);
+valSpan.textContent = fmtParam(def, input.value);
+emitChange(def.id, values[def.id]);
+});
+row.appendChild(input);
+paramRows[def.id] = { row, def, input, valSpan };
+popover.appendChild(row);
+}
+settingsBtn.addEventListener("click", () => toggleSettings());
+document.addEventListener("pointerdown", (e) => {
+if (popover.hidden) return;
+if (!popover.contains(e.target) && e.target !== settingsBtn) toggleSettings(false);
+});
+}
+const resetBtn = el("button", "lk-btn", { type: "button", text: S.reset });
+resetBtn.addEventListener("click", () => { toggleSettings(false); resetCbs.forEach((f) => f()); });
+buttons.appendChild(resetBtn);
+const runBtn = el("button", "lk-btn-primary", { type: "button", text: S.start, "data-lk": "run" });
+runBtn.addEventListener("click", () => { toggleSettings(false); runCbs.forEach((f) => f()); });
+buttons.appendChild(runBtn);
+bar.appendChild(buttons);
+if (popover) bar.appendChild(popover);
+page.appendChild(bar);
+const stage = el("div", "lk-stage lk-card");
+const canvas = el("canvas", null, {
+width: c.canvas.w, height: c.canvas.h,
+role: "img", "aria-label": (c.title || "lab") + " — simulation view"
+});
+stage.appendChild(canvas);
+page.appendChild(stage);
+const statsBox = el("div", "lk-stats");
+const statEls = {};
+for (const st of c.stats) {
+const card = el("div", "lk-stat lk-card", { "data-stat": st.id });
+if (st.variant) card.setAttribute("data-variant", st.variant);
+const label = el("div", "lk-stat-label", { text: st.label || st.id });
+const value = el("div", "lk-stat-value");
+const num = el("span", "lk-num", { text: "—" });
+const unit = el("span", "lk-stat-unit", { text: st.unit ? " " + st.unit : "" });
+value.appendChild(num); value.appendChild(unit);
+card.appendChild(label); card.appendChild(value);
+statEls[st.id] = { card, label, num, unit };
+statsBox.appendChild(card);
+}
+if (c.stats.length) page.appendChild(statsBox);
+const note = el("p", "lk-note");
+if (c.note) note.textContent = c.note;
+page.appendChild(note);
+(mount || document.body).appendChild(page);
+function toggleSettings(force) {
+if (!popover) return;
+const show = force !== undefined ? force : popover.hidden;
+popover.hidden = !show;
+if (settingsBtn) settingsBtn.setAttribute("aria-expanded", String(show));
+}
+function visible(def) {
+if (!def.showIf) return true;
+const cur = values[def.showIf.control];
+return (def.showIf.in || []).includes(cur);
+}
+function refreshVisibility() {
+for (const { row, def } of Object.values(paramRows)) row.hidden = !visible(def);
+}
+refreshVisibility();
+function emitChange(id, v) { changeCbs.forEach((f) => f(id, v)); }
+return {
+root: page,
+canvas,
+ctx: canvas.getContext("2d"),
+config: c,
+params: () => Object.assign({}, values),
+setStat(id, patch) {
+const s = statEls[id];
+if (!s) return;
+if (typeof patch === "string" || typeof patch === "number") patch = { value: patch };
+if (patch.value !== undefined) s.num.textContent = String(patch.value);
+if (patch.label !== undefined) s.label.textContent = patch.label;
+if (patch.unit !== undefined) s.unit.textContent = patch.unit ? " " + patch.unit : "";
+if (patch.hidden !== undefined) s.card.hidden = !!patch.hidden;
+if (patch.live !== undefined) {
+if (patch.live) s.card.setAttribute("data-state", "live");
+else s.card.removeAttribute("data-state");
+}
+},
+setNote(text) { note.textContent = text || ""; },
+setRunLabel(text) { runBtn.textContent = text; },
+setSelect(id, v) {
+const sel = selectEls[id];
+if (sel && sel.value !== v) { sel.value = v; values[id] = v; refreshVisibility(); }
+},
+closeSettings: () => toggleSettings(false),
+onChange: (f) => changeCbs.push(f),
+onRun: (f) => runCbs.push(f),
+onReset: (f) => resetCbs.push(f),
+showError(msg) {
+const box = el("div", "lk-error", { role: "alert", text: "Lab error:\n" + msg });
+page.insertBefore(box, page.firstChild);
+}
+};
+}
+function makeDrawKit(chrome, theme) {
+const ctx = chrome.ctx;
+const W = chrome.canvas.width, H = chrome.canvas.height;
+const p = theme.palette, f = theme.font;
+const view = { OX: 28, BY: Math.round(H * 0.75), S: 280, TX: 130, TZ: 70 };
+const g = {
+ctx, W, H,
+t: 0, dt: 0, state: "idle", params: {}, labelAlpha: 1,
+theme: {
+sky: p.canvasSky, ground: p.canvasGround, ink: p.inkOnCanvas,
+muted: p.inkMuted, accent: p.accent, good: p.good, warn: p.warn,
+danger: p.danger, info: p.info, surface: p.surface,
+fontBody: f.body, fontMono: f.mono
+},
+setView(v) { Object.assign(view, v); },
+P(x, z, y) { return [view.OX + x * view.S + z * view.TX, view.BY - y * view.S - z * view.TZ]; },
+shade: shadeColor,
+tint: tintColor,
+clear(top, bottom) {
+ctx.clearRect(0, 0, W, H);
+const bg = ctx.createLinearGradient(0, 0, 0, H);
+bg.addColorStop(0, top || p.canvasSky);
+bg.addColorStop(1, bottom || shadeColor(p.canvasSky, 0.94));
+ctx.fillStyle = bg;
+ctx.fillRect(0, 0, W, H);
+},
+poly(pts, fill, stroke, lw) {
+ctx.beginPath();
+ctx.moveTo(pts[0][0], pts[0][1]);
+for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+ctx.closePath();
+if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1; ctx.stroke(); }
+},
+box3D(xa, xb, za, zb, y0, y1, col) {
+const q = g.P;
+g.poly([q(xa, za, y1), q(xb, za, y1), q(xb, zb, y1), q(xa, zb, y1)], shadeColor(col, 1.18));
+g.poly([q(xb, za, y0), q(xb, za, y1), q(xb, zb, y1), q(xb, zb, y0)], shadeColor(col, 0.72));
+const [f1x, f1y] = q(xa, za, y0), [f2x, f2y] = q(xb, za, y1);
+const grad = ctx.createLinearGradient(0, f2y, 0, f1y);
+grad.addColorStop(0, shadeColor(col, 1.02));
+grad.addColorStop(1, shadeColor(col, 0.85));
+ctx.fillStyle = grad;
+ctx.fillRect(f1x, f2y, f2x - f1x, f1y - f2y);
+ctx.strokeStyle = shadeColor(col, 0.65);
+ctx.lineWidth = 1;
+ctx.strokeRect(f1x, f2y, f2x - f1x, f1y - f2y);
+},
+text(str, x, y, o = {}) {
+ctx.font = `${o.weight || 700} ${o.size || 13}px ${o.mono ? g.theme.fontMono : g.theme.fontBody}`;
+ctx.textAlign = o.align || "left";
+ctx.textBaseline = o.baseline || "alphabetic";
+ctx.fillStyle = o.color || g.theme.ink;
+ctx.fillText(str, x, y);
+},
+arrow(x1, y1, x2, y2, color, w = 3) {
+ctx.strokeStyle = color; ctx.fillStyle = color;
+ctx.lineWidth = w; ctx.lineCap = "round";
+ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+const ang = Math.atan2(y2 - y1, x2 - x1), hs = Math.max(8, w * 3.3);
+ctx.beginPath();
+ctx.moveTo(x2, y2);
+ctx.lineTo(x2 - hs * Math.cos(ang - 0.45), y2 - hs * Math.sin(ang - 0.45));
+ctx.lineTo(x2 - hs * Math.cos(ang + 0.45), y2 - hs * Math.sin(ang + 0.45));
+ctx.closePath(); ctx.fill();
+},
+callout(txt, tx, ty, lx, ly, alpha) {
+const a = alpha !== undefined ? alpha : g.labelAlpha;
+if (a < 0.02) return;
+ctx.save();
+ctx.globalAlpha = a;
+ctx.strokeStyle = g.theme.muted; ctx.lineWidth = 1.2;
+ctx.beginPath();
+ctx.moveTo(lx, ly + (ly < ty ? 8 : -10));
+ctx.lineTo(lx, (ly + ty) / 2);
+ctx.lineTo(tx, ty);
+ctx.stroke();
+ctx.fillStyle = g.theme.muted;
+ctx.beginPath(); ctx.arc(tx, ty, 2.5, 0, Math.PI * 2); ctx.fill();
+g.text(txt, lx, ly + (ly < ty ? 6 : -6), {
+size: 14, align: "center",
+baseline: ly < ty ? "bottom" : "top",
+color: shadeColor(g.theme.muted, 0.8)
+});
+ctx.restore();
+},
+graphInset(o) {
+const x = o.x, y = o.y, w = o.w || 234, h = o.h || 150;
+ctx.save();
+ctx.globalAlpha = 0.96;
+ctx.fillStyle = g.theme.surface;
+ctx.strokeStyle = shadeColor(g.theme.ground, 0.95);
+ctx.lineWidth = 1.5;
+ctx.beginPath();
+if (ctx.roundRect) ctx.roundRect(x, y, w, h, 10); else ctx.rect(x, y, w, h);
+ctx.fill(); ctx.stroke();
+if (o.title) g.text(o.title, x + 14, y + 10, { size: 11, weight: 800, color: g.theme.muted, baseline: "top" });
+const ax = x + 36, ay = y + h - 24, aw = w - 52, ah = h - 58;
+ctx.strokeStyle = g.theme.muted; ctx.lineWidth = 1;
+ctx.beginPath();
+ctx.moveTo(ax, ay - ah); ctx.lineTo(ax, ay); ctx.lineTo(ax + aw, ay);
+ctx.stroke();
+if (o.xLabel) g.text(o.xLabel, ax + aw + 4, ay - 4, { size: 10, color: g.theme.muted });
+if (o.yLabel) g.text(o.yLabel, ax - 12, ay - ah - 2, { size: 10, color: g.theme.muted });
+ctx.restore();
+return { ax, ay, aw, ah, px: (fx) => ax + fx * aw, py: (fy) => ay - fy * ah };
+}
+};
+return g;
+}
+function start(config, theme, SimClass, mount) {
+const th = applyTheme(theme);
+const chrome = buildChrome(config, mount);
+const S = chrome.config.strings;
+function fail(msg) {
+chrome.showError(msg);
+throw new Error("LabKit: " + msg);
+}
+if (typeof SimClass !== "function") fail("Sim class is missing or not a class.");
+for (const m of ["reset", "step", "draw", "values"]) {
+if (typeof SimClass.prototype[m] !== "function") fail(`Sim is missing required method ${m}()`);
+}
+const g = makeDrawKit(chrome, th);
+let sim;
+try {
+sim = new SimClass(chrome.params());
+} catch (e) {
+fail("Sim constructor threw: " + (e && e.message ? e.message : e));
+}
+let state = "idle";
+let t = 0;
+let raf = 0;
+let last = performance.now();
+function setState(s) {
+state = s;
+chrome.setRunLabel(s === "running" ? S.pause : s === "done" ? S.runAgain : s === "paused" ? S.resume : S.start);
+}
+function hardReset() {
+t = 0;
+setState("idle");
+try { sim.reset(chrome.params()); } catch (e) { die(e); }
+}
+function die(e) {
+cancelAnimationFrame(raf);
+chrome.showError((e && e.stack) ? e.stack.split("\n").slice(0, 4).join("\n") : String(e));
+console.error(e);
+}
+chrome.onChange((id, v) => {
+if (sim.onChange) { try { sim.onChange(id, v, chrome.params()); } catch (e) { die(e); return; } }
+hardReset();
+});
+chrome.onReset(hardReset);
+chrome.onRun(() => {
+if (state === "done") { t = 0; try { sim.reset(chrome.params()); } catch (e) { die(e); return; } setState("running"); }
+else if (state === "running") setState("paused");
+else setState("running");
+});
+function frame(now) {
+const dt = Math.min(0.05, (now - last) / 1000);
+last = now;
+try {
+if (state === "running") {
+t += dt;
+if (sim.step(dt, t) === "done") setState("done");
+}
+const target = state === "running" ? 0.15 : 1;
+g.labelAlpha += (target - g.labelAlpha) * Math.min(1, dt * 6);
+g.t = t; g.dt = dt; g.state = state; g.params = chrome.params();
+sim.draw(g);
+const vals = sim.values() || {};
+for (const [id, patch] of Object.entries(vals)) {
+if (id === "_note") chrome.setNote(patch);
+else chrome.setStat(id, patch);
+}
+} catch (e) {
+die(e);
+return;
+}
+raf = requestAnimationFrame(frame);
+}
+hardReset();
+raf = requestAnimationFrame(frame);
+return {
+chrome, sim, drawKit: g,
+state: () => state,
+reset: hardReset,
+stop: () => cancelAnimationFrame(raf)
+};
+}
+window.LabKit = { version: VERSION, applyTheme, buildChrome, start };
+})();
+
+/*__LK_SIM_BEGIN__*/
+// BOX 7.1 — Investigating springs: hang a load from a single spring, two in
+// series, or two in parallel (Figure 7.9); measure extension, get k_eq = F/x.
+// Off-pack: support, coil springs, load block and ruler are hand-drawn.
+const L0 = 0.25;        // natural length of one spring (m)
+const SUP_Y = 0.86;     // underside of the wooden support (m)
+const LAM = 1.6;        // damping rate of the settling oscillation (1/s)
+const GRAV = 9.81;
+const CX = 1.02;        // arrangement centreline (world m)
+const RULER_X = 1.30;
+
+class Sim {
+  constructor(P) { this.reset(P); }
+
+  keq() {
+    const k = this.p.k, a = this.p.arrangement;
+    return a === "series" ? k / 2 : a === "parallel" ? 2 * k : k;
+  }
+  natLen() { return this.p.arrangement === "series" ? 2 * L0 + 0.02 : L0; }
+
+  reset(P) {
+    this.p = P;
+    this.F = P.mass * GRAV;
+    this.extEq = this.F / this.keq();            // equilibrium extension
+    this.om = Math.sqrt(this.keq() / P.mass);    // oscillation frequency
+    this.doneT = Math.log(50) / LAM;             // settled to within 2%
+    this.tNow = 0;
+    this.running = false;
+    this.finished = false;
+    this.trace = [];
+  }
+
+  // --- physics: damped settle onto the new equilibrium (closed form) ---
+  extAt(t) {
+    if (t <= 0) return 0;
+    return this.extEq * (1 - Math.exp(-LAM * t) * Math.cos(this.om * t));
+  }
+
+  step(dt, t) {
+    if (!this.trace.length || t - this.trace[this.trace.length - 1][0] > 0.02) {
+      this.trace.push([t, this.extAt(t)]);
+    }
+    if (t >= this.doneT) return "done";
+  }
+
+  // --- scene ---
+  draw(g) {
+    this.tNow = Math.min(g.t, this.doneT);
+    this.running = g.state === "running";
+    this.finished = g.state === "done";
+    const ctx = g.ctx, arr = this.p.arrangement;
+    const ext = this.extAt(this.tNow);
+
+    g.clear();
+    g.setView({ OX: 0, BY: 445, S: 440, TX: 150, TZ: 80 });
+
+    // wooden support bar (as in Figure 7.9)
+    g.box3D(0.72, 1.38, -0.06, 0.06, SUP_Y, SUP_Y + 0.045, "#E9CA9C");
+
+    const yNat = SUP_Y - this.natLen();   // unstretched bottom position
+    const yBot = yNat - ext;
+
+    this.ruler(g, RULER_X, yNat);
+
+    // dashed natural-length line + extension dimension arrow
+    ctx.save();
+    ctx.globalAlpha = Math.max(0.5, g.labelAlpha);
+    const [n1x, n1y] = g.P(CX - 0.12, 0, yNat), [n2x] = g.P(RULER_X + 0.05, 0, yNat);
+    ctx.strokeStyle = g.theme.muted; ctx.lineWidth = 1.4; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(n1x, n1y); ctx.lineTo(n2x, n1y); ctx.stroke();
+    ctx.setLineDash([]);
+    if (ext > 0.004) {
+      const [ax, ay1] = g.P(CX + 0.17, 0, yNat), [, ay2] = g.P(CX + 0.17, 0, yBot);
+      g.arrow(ax, (ay1 + ay2) / 2, ax, ay1, g.theme.danger, 1.6);
+      g.arrow(ax, (ay1 + ay2) / 2, ax, ay2, g.theme.danger, 1.6);
+      g.text("x = " + Math.round(ext * 1000) + " mm", ax + 8, (ay1 + ay2) / 2,
+             { size: 13, color: g.theme.danger, baseline: "middle" });
+    }
+    ctx.restore();
+
+    if (arr === "parallel") {
+      this.spring(g, CX - 0.05, SUP_Y, L0 + ext);
+      this.spring(g, CX + 0.05, SUP_Y, L0 + ext);
+      g.box3D(CX - 0.075, CX + 0.075, -0.015, 0.015, yBot - 0.018, yBot, "#C8CDD2");
+      this.mass(g, CX, yBot - 0.018);
+    } else if (arr === "series") {
+      const each = L0 + ext / 2;
+      this.spring(g, CX, SUP_Y, each);
+      const [lx, ly] = g.P(CX, 0, SUP_Y - each - 0.01);
+      ctx.fillStyle = "#7A848D";
+      ctx.beginPath(); ctx.arc(lx, ly, 4, 0, Math.PI * 2); ctx.fill();
+      this.spring(g, CX, SUP_Y - each - 0.02, each);
+      this.mass(g, CX, yBot);
+    } else {
+      this.spring(g, CX, SUP_Y, L0 + ext);
+      this.mass(g, CX, yBot);
+    }
+
+    // callouts: static labels top strip; the load moves, so it goes bottom strip
+    g.callout("wooden support", ...g.P(0.80, 0, SUP_Y + 0.02), 140, 30);
+    g.callout(arr === "single" ? "spring" : "identical springs",
+              ...g.P(CX + (arr === "parallel" ? 0.06 : 0.016), 0, SUP_Y - L0 * 0.55), 330, 30);
+    g.callout("load", ...g.P(CX + 0.03, -0.03, yBot - 0.035), 470, 452);
+    g.callout("ruler (mm)", ...g.P(RULER_X + 0.015, 0, yNat - 0.2), 660, 452);
+
+    // extension–time inset (shows the overshoot dying away)
+    if (this.trace.length > 1) {
+      const box = g.graphInset({ x: 706, y: 16, w: 272, h: 152,
+                                 title: "EXTENSION–TIME", xLabel: "t", yLabel: "x" });
+      const yMax = this.extEq * 1.9 || 1;
+      ctx.strokeStyle = g.theme.info; ctx.lineWidth = 2; ctx.beginPath();
+      this.trace.forEach(([tt, xx], i) => {
+        const x = box.px(tt / this.doneT), y = box.py(xx / yMax);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      });
+      ctx.stroke();
+    }
+  }
+
+  // coil spring drawn as a zigzag between square ends (grey metal, like Figure 7.9)
+  spring(g, cx, yTop, len) {
+    const ctx = g.ctx, r = 0.016, coils = 12;
+    ctx.strokeStyle = "#5A6570";
+    ctx.lineWidth = 2.4;
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    const [p0x, p0y] = g.P(cx, 0, yTop); ctx.moveTo(p0x, p0y);
+    const [p1x, p1y] = g.P(cx, 0, yTop - 0.018); ctx.lineTo(p1x, p1y);
+    const segTop = yTop - 0.018, segLen = len - 0.036, N = coils * 2;
+    for (let i = 1; i <= N; i++) {
+      const [px, py] = g.P(cx + (i % 2 ? -r : r), 0, segTop - segLen * i / N);
+      ctx.lineTo(px, py);
+    }
+    const [p2x, p2y] = g.P(cx, 0, yTop - len + 0.018); ctx.lineTo(p2x, p2y);
+    const [p3x, p3y] = g.P(cx, 0, yTop - len); ctx.lineTo(p3x, p3y);
+    ctx.stroke();
+  }
+
+  // blue load block hanging with its top at topY (like Figure 7.9's block)
+  mass(g, cx, topY) {
+    g.box3D(cx - 0.042, cx + 0.042, -0.032, 0.032, topY - 0.07, topY, "#9DB6CD");
+  }
+
+  // ruler with zero aligned to the unstretched spring bottom — reads x directly
+  ruler(g, x, yZero) {
+    const ctx = g.ctx;
+    const [px, py] = g.P(x, 0, yZero + 0.02);
+    const wPx = 26, hPx = 0.42 * 440;
+    ctx.save();
+    ctx.fillStyle = g.theme.surface;
+    ctx.strokeStyle = g.shade(g.theme.ground, 0.85);
+    ctx.lineWidth = 1;
+    ctx.fillRect(px, py, wPx, hPx);
+    ctx.strokeRect(px, py, wPx, hPx);
+    const [, pyZero] = g.P(x, 0, yZero);
+    for (let cm = 0; cm <= 38; cm++) {
+      const ty = pyZero + cm * 0.01 * 440;
+      if (ty > py + hPx - 4) break;
+      const major = cm % 5 === 0;
+      ctx.strokeStyle = g.theme.muted;
+      ctx.beginPath(); ctx.moveTo(px, ty); ctx.lineTo(px + (major ? 10 : 6), ty); ctx.stroke();
+      if (major) {
+        ctx.fillStyle = g.theme.muted;
+        ctx.font = "9px " + g.theme.fontMono;
+        ctx.textAlign = "left"; ctx.textBaseline = "middle";
+        ctx.fillText(String(cm), px + 12, ty);
+      }
+    }
+    ctx.restore();
+  }
+
+  // --- dashboard ---
+  values() {
+    const ext = this.extAt(this.tNow);
+    const extMm = Math.round(ext * 1000);       // read off the ruler to the nearest mm
+    const arr = this.p.arrangement;
+    return {
+      force: (this.F).toFixed(2),
+      ext: { value: String(extMm), live: this.running },
+      kmeas: { value: this.finished && extMm > 0 ? (this.F / (extMm / 1000)).toFixed(1) : "—",
+               label: "Measured k_eq = F ÷ x" },
+      kpred: { value: this.finished ? this.keq().toFixed(1) : "?",
+               label: this.finished ? "Predicted k_eq (revealed)" : "Predicted k_eq — your guess?" },
+      _note: arr === "series"
+        ? "Two identical springs end-to-end: EACH spring feels the full load F, so each stretches by F/k. Predict k_eq, then run to check."
+        : arr === "parallel"
+        ? "Two identical springs side-by-side: each spring supports HALF the load. Predict k_eq, then run to check."
+        : "Hooke's law: F = kx. Hang the load, wait for it to settle, and k = F ÷ x."
+    };
+  }
+}
+
+/*__LK_SIM_END__*/
+LabKit.start(CONFIG, THEME, Sim, document.getElementById("lab-root"));
+</script>
+</body>
+</html>

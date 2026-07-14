@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "preset": "dark-slate",
+    "source": "stock archetype: dark screen-first material (slate panels, light ink, bright blue accent)"
+  },
+  "palette": {
+    "pageBg": "#171C23",
+    "surface": "#1F2630",
+    "surfaceAlt": "#242D38",
+    "line": "#33404E",
+    "ink": "#E6EBF0",
+    "inkMuted": "#93A1B0",
+    "accent": "#3B82D9",
+    "accentContrast": "#FFFFFF",
+    "good": "#37B26C",
+    "danger": "#E05252",
+    "info": "#3AA8B0",
+    "canvasSky": "#202834",
+    "canvasGround": "#39434F",
+    "inkOnCanvas": "#E6EBF0"
+  },
+  "font": {
+    "body": "-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+    "heading": "inherit",
+    "mono": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+    "baseSizePx": 15
+  },
+  "shape": {
+    "radiusPx": 10,
+    "borderPx": 1,
+    "shadow": "flat"
+  }
+}

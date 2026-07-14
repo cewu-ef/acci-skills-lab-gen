@@ -11,7 +11,7 @@ animation harness — you author only three small files and run an assembly scri
 
 | You write | What it is | Reference |
 |---|---|---|
-| `themes/<slug>.theme.json` | visual style tokens (once per textbook, reused) | `references/style-extraction.md` |
+| `themes/<slug>.theme.json` | visual style tokens (once per textbook; usually copied from a stock preset) | `references/style-extraction.md` |
 | `lab-config.json` | declarative chrome: title, selectors, sliders, stat cards | `references/lab-config.md` |
 | `sim.js` | one `class Sim` — physics + canvas scene + dashboard values | `references/sim-authoring.md` + `references/drawing-api.md` |
 
@@ -19,14 +19,19 @@ Study `references/example-sim.md` once before writing your first sim.
 
 ## Workflow
 
-1. **Study the material** (images or brief): identify the experiment, apparatus,
-   the methods/variants offered, measurable quantities, and which parameters a
-   student should be able to change.
-2. **Theme**: try to read existing presets in the workspace `themes/` directory first
-   (attempt `read_file themes/` — if the directory is missing or has no matching preset,
-   extract). If a preset for this textbook/course exists, REUSE it — do not re-extract.
-   Otherwise follow `references/style-extraction.md`, write `themes/<slug>.theme.json`,
-   and check it: `run_skill_script lab-gen/scripts/validate_theme.py themes/<slug>.theme.json`
+1. **Study the material** (images or brief): read ALL pages in one pass, then fill
+   in the experiment brief per `references/brief-template.md`. Every control, param,
+   stat, and sim behaviour you build must trace to a line of the brief. If the user
+   already supplied a brief in that shape, take it as-is and skip image study.
+2. **Theme** — in order, stop at the first hit:
+   a. a workspace `themes/` preset for this textbook/course exists → REUSE it, done;
+   b. a stock preset fits (table in `references/style-extraction.md`) → copy
+      `lab-gen/presets/<name>.theme.json` into workspace `themes/`, adjusting only
+      the few identity tokens that differ (delta-extraction);
+   c. nothing fits and the material has a strong visual identity → full extraction
+      per `references/style-extraction.md`.
+   After b or c, check it:
+   `run_skill_script lab-gen/scripts/validate_theme.py themes/<slug>.theme.json`
 3. **Write `lab-config.json`** per `references/lab-config.md`.
 4. **Author `sim.js`** per `references/sim-authoring.md`, with
    `references/drawing-api.md` at hand for the drawing calls.

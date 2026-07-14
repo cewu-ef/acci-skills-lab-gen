@@ -1,0 +1,37 @@
+{
+  "id": "spring-combinations-lab",
+  "title": "Investigating Springs",
+  "subtitle": "BOX 7.1 · Interactive lab",
+  "layout": "standard",
+  "canvas": { "w": 1000, "h": 470 },
+
+  "controls": [
+    {
+      "id": "arrangement",
+      "label": "Arrangement",
+      "width": 300,
+      "value": "single",
+      "options": [
+        { "value": "single",   "label": "Single spring" },
+        { "value": "series",   "label": "Two springs in series (Figure 7.9a)" },
+        { "value": "parallel", "label": "Two springs in parallel (Figure 7.9b)" }
+      ]
+    }
+  ],
+
+  "params": [
+    { "id": "k", "label": "Force constant k (one spring)", "min": 25, "max": 60, "step": 5, "value": 40,
+      "unit": "N/m", "decimals": 0 },
+    { "id": "mass", "label": "Load mass", "min": 0.10, "max": 0.25, "step": 0.05, "value": 0.15,
+      "unit": "kg", "decimals": 2 }
+  ],
+
+  "stats": [
+    { "id": "force", "label": "Load F",          "unit": "N" },
+    { "id": "ext",   "label": "Extension x",     "unit": "mm" },
+    { "id": "kmeas", "label": "Measured k_eq",   "unit": "N/m", "variant": "accent" },
+    { "id": "kpred", "label": "Predicted k_eq",  "unit": "N/m", "variant": "info" }
+  ],
+
+  "note": "Predict first: if one spring has force constant k, what is the equivalent force constant of two in series? Two in parallel? Run the experiment to check."
+}

@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "preset": "academic-serif",
+    "source": "stock archetype: bookish academic text (cream paper, serif body, burgundy accent, sharp boxes)"
+  },
+  "palette": {
+    "pageBg": "#F7F3E9",
+    "surface": "#FFFDF7",
+    "surfaceAlt": "#F3EDDE",
+    "line": "#E0D6BE",
+    "ink": "#2E2A22",
+    "inkMuted": "#857757",
+    "accent": "#8C2F39",
+    "accentContrast": "#FFFFFF",
+    "good": "#3A7D44",
+    "danger": "#A83232",
+    "info": "#31646C",
+    "canvasSky": "#FAF6EC",
+    "canvasGround": "#D9CBA8",
+    "inkOnCanvas": "#2E2A22"
+  },
+  "font": {
+    "body": "Georgia, 'Times New Roman', serif",
+    "heading": "inherit",
+    "mono": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+    "baseSizePx": 15
+  },
+  "shape": {
+    "radiusPx": 4,
+    "borderPx": 1,
+    "shadow": "flat"
+  }
+}
