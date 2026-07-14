@@ -34,6 +34,12 @@ g.setView({ OX: 28, BY: 352, S: 280, TX: 130, TZ: 70 })  // defaults shown ≈ t
 `{OX: 28, BY: 352, S: 280, TX: 130, TZ: 70}` on a 1000×470 canvas — call
 `g.setView(...)` once at the top of `draw` with the values you design around.
 
+Those defaults are sized for a 3 m bench. For smaller apparatus (a tabletop demo,
+a 0.5 m rig), rescale so the scene fills the canvas: pick `S ≈ 700 / (world width
+in metres)` and re-derive OX/BY around your scene's centre. If the first render
+leaves a small scene floating in empty sky, S is too low — zoom the view, don't
+shrink the world.
+
 ## Methods
 
 ```js
@@ -54,6 +60,8 @@ g.callout(text, tx, ty, lx, ly, alpha?)   // margin label with elbow leader to t
    // label sits ABOVE the target (text baseline above ly), else below. Convention from the
    // reference labs: park labels in the clear top strip (ly ≈ 30) or bottom strip (ly ≈ 452)
    // and clamp lx away from the canvas edges (keep lx within ~80..920 for short labels).
+   // Labels that TRACK A MOVING TARGET (a trolley, a card) go in the OPPOSITE strip from
+   // the static labels — a moving label will eventually cross any static label in its strip.
 g.graphInset({x, y, w, h, title?, xLabel?, yLabel?})
    // Draws a framed mini-graph card + axes, returns the plot area:
    //   {ax, ay, aw, ah, px(fx), py(fy)}   fx, fy ∈ [0,1] fractions of the axes

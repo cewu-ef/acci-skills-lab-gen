@@ -1,0 +1,37 @@
+{
+  "id": "elephant-toothpaste-lab",
+  "title": "Elephant Toothpaste",
+  "subtitle": "Science Buddies activity · Interactive lab",
+  "layout": "standard",
+  "canvas": { "w": 1000, "h": 470 },
+
+  "controls": [
+    {
+      "id": "coloring",
+      "label": "Food coloring",
+      "width": 270,
+      "value": "stripes",
+      "options": [
+        { "value": "none",    "label": "No coloring (white foam)" },
+        { "value": "single",  "label": "Single color (mixed into the peroxide)" },
+        { "value": "stripes", "label": "Stripes (drops on the bottle's rim)" }
+      ]
+    }
+  ],
+
+  "params": [
+    { "id": "peroxide", "label": "3% hydrogen peroxide", "min": 60, "max": 240, "step": 10, "value": 120,
+      "unit": "mL", "decimals": 0 },
+    { "id": "yeast", "label": "Yeast (in 3 tbsp warm water)", "min": 0.5, "max": 2, "step": 0.25, "value": 1,
+      "unit": "tbsp", "decimals": 2 }
+  ],
+
+  "stats": [
+    { "id": "foam", "label": "Foam volume",    "unit": "mL", "variant": "accent" },
+    { "id": "o2",   "label": "O₂ released",    "unit": "mL" },
+    { "id": "left", "label": "H₂O₂ remaining", "unit": "%",  "variant": "info" },
+    { "id": "rate", "label": "Foaming rate",   "unit": "mL/s" }
+  ],
+
+  "note": "Catalase in the yeast decomposes hydrogen peroxide — 2 H₂O₂ → 2 H₂O + O₂ — and the dish soap traps the escaping oxygen as foam. The reaction slows as the peroxide runs out."
+}

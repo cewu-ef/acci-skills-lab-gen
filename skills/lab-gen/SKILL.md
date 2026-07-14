@@ -51,6 +51,10 @@ The output filename stays the same; the file is replaced.
   pedagogically tempting. Users extend a lab by uploading more material later
   (e.g. a follow-up page adding methods to the same dropdown), so a single-option
   select is fine as a starting point.
+- One lab per run. If the material mixes sources, build from the pages that document
+  a single coherent experiment (procedure, apparatus, quantities); exclude pages that
+  show no runnable experiment (course outlines, syllabi, unrelated topics) and tell
+  the user what you excluded and why, rather than blending sources into one lab.
 - No network anywhere: no fetch/XHR/imports/CDN/webfonts in sim.js or the theme.
   The assembler rejects violations.
 - All sim state must derive from the params passed to `reset(P)` — this is what

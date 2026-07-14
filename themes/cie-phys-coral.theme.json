@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "preset": "cie-phys-coral",
+    "source": "Screenshot 2026-07-10 at 15.47.35.png (BOX 1.1: Laboratory measurements of speed)"
+  },
+  "palette": {
+    "pageBg": "#F8E2CF",
+    "surface": "#FFFAF4",
+    "surfaceAlt": "#FBEEDF",
+    "line": "#EDD2B8",
+    "ink": "#33251C",
+    "inkMuted": "#9C6B44",
+    "accent": "#E46440",
+    "accentContrast": "#FFFFFF",
+    "good": "#1E9E5A",
+    "danger": "#B91C1C",
+    "info": "#15828A",
+    "canvasSky": "#FDF3E7",
+    "canvasGround": "#E9CFAE",
+    "inkOnCanvas": "#33251C"
+  },
+  "font": {
+    "body": "-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+    "heading": "inherit",
+    "mono": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+    "baseSizePx": 15
+  },
+  "shape": {
+    "radiusPx": 10,
+    "borderPx": 1.5,
+    "shadow": "soft"
+  }
+}
